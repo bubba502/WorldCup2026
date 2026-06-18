@@ -1,0 +1,4664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIFA World Cup 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(160deg, #ccd8ff 0%, #e8d8ff 35%, #ffd8e8 65%, #ffe8c0 100%);
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── TROPHY KALEIDOSCOPE BACKGROUND ──────────────────────── */
+    #trophy-bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+      pointer-events: none; user-select: none;
+    }
+    .tb {
+      position: absolute; line-height: 1;
+      animation: tb-drift linear infinite alternate;
+    }
+    @keyframes tb-drift {
+      from { transform: var(--r0); }
+      to   { transform: var(--r1); }
+    }
+    #app { position: relative; z-index: 1; }
+
+    /* ── HERO ─────────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #BF0A30 0%, #8B0020 25%, #1a0a4d 55%, #002868 100%);
+      padding: 32px 20px 28px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '⚽';
+      position: absolute; font-size: 180px; opacity: 0.06;
+      top: -30px; left: -20px; transform: rotate(-20deg);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '🏆';
+      position: absolute; font-size: 160px; opacity: 0.07;
+      bottom: -30px; right: -10px; transform: rotate(15deg);
+      pointer-events: none;
+    }
+    .confetti-dot {
+      position: absolute; border-radius: 50%; opacity: 0.55;
+      animation: float 4s ease-in-out infinite alternate;
+    }
+    @keyframes float { from { transform: translateY(0px); } to { transform: translateY(-10px); } }
+
+    .hero-eyebrow {
+      font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(255,215,0,0.85); margin-bottom: 10px;
+    }
+    .hero-title {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900; color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+      letter-spacing: -0.02em;
+    }
+    .hero-title span { color: #FFD700; }
+    .hero-sub {
+      font-size: 0.8rem; color: rgba(255,255,255,0.6);
+      margin-top: 6px; letter-spacing: 0.06em;
+    }
+    .hero-badges {
+      display: flex; justify-content: center; gap: 8px; margin-top: 14px; flex-wrap: wrap;
+    }
+    .hero-badge {
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 99px; padding: 4px 12px; font-size: 0.7rem; color: #fff;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── DATE STRIP ───────────────────────────────────────────── */
+    .date-bar {
+      background: rgba(255,255,255,0.94);
+      border-bottom: 3px solid #BF0A30;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      padding: 10px 0 0;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .month-label {
+      text-align: center; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: #002868; margin-bottom: 6px;
+    }
+    .strip-row { display: flex; align-items: center; padding: 0 4px; }
+    .strip-arrow {
+      flex-shrink: 0; width: 30px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #999; font-size: 1.2rem; border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .strip-arrow:hover { color: #BF0A30; background: #fff5f5; }
+    .strip-window { flex: 1; overflow: hidden; }
+    .strip-inner {
+      display: flex;
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    .day-cell {
+      flex-shrink: 0; width: 60px; text-align: center;
+      padding: 0 4px 10px; cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    .day-cell:hover .day-num { color: #BF0A30; }
+    .day-cell.selected { border-bottom-color: #FFD700; }
+    .day-cell.selected .day-name { color: #BF0A30; font-weight: 700; }
+    .day-cell.selected .day-num  { color: #BF0A30; font-weight: 900; }
+    .day-cell.past .day-name { color: #bbb; }
+    .day-cell.past .day-num  { color: #ccc; }
+    .day-name { font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: #888; font-weight: 600; }
+    .day-num  { font-size: 1.05rem; font-weight: 700; color: #1a1a2e; margin-top: 2px; }
+    .day-cell.today .day-name { color: #002868; }
+    .day-cell.today .day-num  { color: #002868; }
+
+    /* ── MATCHES ──────────────────────────────────────────────── */
+    .matches-section { max-width: 920px; margin: 24px auto; padding: 0 16px; }
+    .date-heading {
+      text-align: center; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: #002868; margin-bottom: 14px;
+    }
+    .match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+
+    .match-card {
+      background: rgba(255,255,255,0.92); border-radius: 14px;
+      border: 2px solid rgba(255,255,255,0.6);
+      padding: 16px 18px; cursor: pointer;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      backdrop-filter: blur(6px);
+    }
+    .match-card:hover { border-color: #FFD700; box-shadow: 0 6px 20px rgba(191,10,48,0.12); transform: translateY(-2px); }
+    .match-card.active { border-color: #BF0A30; box-shadow: 0 6px 20px rgba(191,10,48,0.18); }
+    .match-card.live { border-left: 4px solid #22c55e; }
+    .match-preview { font-size: 0.72rem; color: rgba(30,30,60,0.7); line-height: 1.5; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08); font-style: italic; }
+
+    .match-comp { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #BF0A30; margin-bottom: 12px; }
+    .match-teams { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .team-side { flex: 1; text-align: center; }
+    .flag-img { display: block; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.25); object-fit: cover; }
+    .flag-40  { width: 40px; height: 27px; }
+    .flag-80  { width: 80px; height: 54px; }
+    .flag-160 { width: 120px; height: 80px; border-radius: 6px; }
+    .team-flag-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .team-name { font-size: 0.72rem; font-weight: 700; color: #1a1a2e; }
+    .score-block { text-align: center; min-width: 80px; }
+    .score-nums { font-size: 1.8rem; font-weight: 900; color: #1a1a2e; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+    .score-vs { font-size: 1rem; font-weight: 700; color: #bbb; }
+    .score-time { font-size: 0.68rem; color: #888; margin-top: 3px; }
+    .live-dot { color: #22c55e; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+    .score-ft { font-size: 0.65rem; color: #aaa; }
+
+    .no-matches { text-align: center; color: #aaa; padding: 48px; font-size: 0.9rem; }
+    .loading-msg { text-align: center; color: #999; padding: 40px; font-size: 0.85rem; }
+
+    /* ── LINEUP PANEL ─────────────────────────────────────────── */
+    .lineup-panel { max-width: 1320px; margin: 0 auto; padding: 0 16px 48px; }
+    .lineup-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 600; color: #002868;
+      cursor: pointer; margin-bottom: 16px; padding: 6px 14px;
+      border: 2px solid #e0e4ef; border-radius: 8px;
+      background: #fff; transition: all 0.15s;
+    }
+    .lineup-back:hover { border-color: #BF0A30; color: #BF0A30; }
+
+    .lineup-match-header {
+      background: linear-gradient(135deg, #BF0A30, #8B0020 40%, #002868);
+      border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 20px;
+      color: #fff; box-shadow: 0 4px 20px rgba(191,10,48,0.25);
+    }
+    .lineup-teams-header { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 10px; }
+    .lineup-team-name { font-size: 1.1rem; font-weight: 800; }
+    .lineup-score { font-size: 2.4rem; font-weight: 900; font-variant-numeric: tabular-nums; color: #FFD700; }
+    .lineup-status { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin-top: 4px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .lineup-status.live { color: #4ade80; }
+
+    /* ── GOALS SECTION ───────────────────────────────────────── */
+    .goals-section {
+      background: rgba(255,255,255,0.96); border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25); margin-bottom: 16px;
+      overflow: hidden; border: 1px solid rgba(255,255,255,0.5);
+    }
+    .goals-section-header {
+      background: linear-gradient(135deg, #002868, #1a3a8f);
+      padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+      font-size: 0.72rem; font-weight: 800; color: #fff;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .goals-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      padding: 0;
+    }
+    .goals-col {
+      padding: 12px 16px;
+    }
+    .goals-col:first-child { border-right: 1px solid #f0f3fa; }
+    .goals-col-header {
+      font-size: 0.62rem; font-weight: 800; color: #5a6a8a;
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .goal-row {
+      display: flex; align-items: baseline; gap: 6px;
+      padding: 5px 0; border-bottom: 1px solid #f5f7fc;
+    }
+    .goal-row:last-child { border-bottom: none; }
+    .goal-min {
+      font-size: 0.72rem; font-weight: 800; color: #FFD700;
+      background: #002868; border-radius: 4px;
+      padding: 1px 5px; min-width: 34px; text-align: center;
+      flex-shrink: 0;
+    }
+    .goal-icon { font-size: 0.85rem; flex-shrink: 0; }
+    .goal-names { display: flex; flex-direction: column; gap: 1px; }
+    .goal-scorer { font-size: 0.82rem; font-weight: 700; color: #1a1a2e; }
+    .goal-assist { font-size: 0.82rem; font-weight: 500; color: #4a5568; }
+    .goals-empty { padding: 20px 16px; text-align: center; color: #aaa; font-size: 0.78rem; }
+
+    /* ── GRIDS ────────────────────────────────────────────────── */
+    .grids-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .grids-row { grid-template-columns: 1fr; } }
+
+    .team-grid-wrap { background: rgba(255,255,255,0.94); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(6px); }
+    .team-grid-header {
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #002868, #1a3a8f);
+      display: flex; align-items: center; gap: 10px; color: #fff;
+    }
+    .tg-flag { display:flex; align-items:center; }
+    .tg-name { font-size: 1rem; font-weight: 800; color: #fff; }
+    .tg-meta { font-size: 0.62rem; color: rgba(255,255,255,0.55); margin-top: 1px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { position: sticky; top: 0; }
+    th {
+      background: #f0f3fa; color: #5a6a8a;
+      font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 8px 10px; text-align: left; font-weight: 700;
+      cursor: pointer; user-select: none; white-space: nowrap;
+      border-bottom: 2px solid #e0e4ef;
+      transition: background 0.15s, color 0.15s;
+    }
+    th:hover { background: #e4e9f5; color: #002868; }
+    th.sort-asc, th.sort-desc { background: #002868; color: #FFD700; }
+    th:first-child { text-align: center; width: 38px; }
+    .sort-icon { font-size: 0.55rem; margin-left: 3px; opacity: 0.5; }
+    th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; }
+
+    tr.starter-row { background: #fff; }
+    tr.bench-row { background: #f9fafc; color: #6b7a99; }
+    tr:hover td { background: #fffbe6 !important; }
+
+    td { padding: 7px 10px; font-size: 0.78rem; border-bottom: 1px solid #f0f3fa; }
+    td:first-child { text-align: center; color: #aaa; font-variant-numeric: tabular-nums; font-size: 0.72rem; font-weight: 700; }
+
+    .player-link { color: inherit; text-decoration: none; font-weight: 600; }
+    .player-link:hover { color: #BF0A30; text-decoration: underline; }
+    .pos-badge { color: #aaa; font-size: 0.65rem; }
+    .club-cell { font-size: 0.72rem; color: #6b7a99; }
+    .salary-cell { color: #16a34a; font-size: 0.72rem; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+    .salary-est { color: #86efac; font-size: 0.6rem; font-weight: 400; }
+    .no-data { color: #ddd; }
+
+    .start-badge { background: #dcfce7; color: #15803d; font-size: 0.55rem; padding: 2px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+    .bench-badge { background: #f1f5f9; color: #94a3b8; font-size: 0.55rem; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+
+    .sep-row td { padding: 2px 0; background: linear-gradient(to right, #BF0A30, #002868); height: 2px; }
+    .no-lineup { text-align: center; padding: 40px; color: #aaa; }
+
+    /* ── TEAM VIEW ──────────────────────────────────────────────── */
+    .view-tabs { display:flex; border-top:1px solid rgba(0,0,0,0.07); }
+    .view-tab {
+      flex:1; padding:7px 0; text-align:center; font-size:0.68rem;
+      font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+      cursor:pointer; color:#aaa; border:none; border-bottom:3px solid transparent;
+      background:transparent; transition:all 0.15s;
+    }
+    .view-tab.active { color:#BF0A30; border-bottom-color:#BF0A30; }
+    .view-tab:hover:not(.active) { color:#555; }
+
+    .team-picker-panel {
+      background:rgba(255,255,255,0.98); border-bottom:2px solid #e8eaf0;
+      padding:0 16px; max-height:0; overflow:hidden;
+      transition:max-height 0.3s ease, padding 0.3s;
+    }
+    .team-picker-panel.open { max-height:260px; padding:14px 16px; overflow-y:auto; }
+    .team-picker-title {
+      font-size:0.63rem; font-weight:700; letter-spacing:0.14em;
+      text-transform:uppercase; color:#aaa; margin-bottom:10px;
+    }
+    .team-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .team-chip {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:4px 9px 4px 5px; border-radius:7px; cursor:pointer;
+      font-size:0.7rem; font-weight:600; color:#1a1a2e;
+      background:rgba(0,40,104,0.05); border:1px solid rgba(0,40,104,0.12);
+      transition:all 0.12s; white-space:nowrap;
+    }
+    .team-chip:hover { background:rgba(191,10,48,0.08); border-color:#BF0A30; color:#BF0A30; }
+    .team-chip.selected { background:#BF0A30; border-color:#BF0A30; color:#fff; }
+
+    .team-filter-bar {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 16px; background:#002868; color:#fff;
+      font-size:0.74rem; font-weight:700;
+    }
+    .team-filter-bar .clear-btn {
+      margin-left:auto; cursor:pointer; font-size:0.68rem;
+      background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2);
+      color:#fff; padding:3px 11px; border-radius:99px; font-weight:600;
+    }
+    .team-filter-bar .clear-btn:hover { background:rgba(255,255,255,0.28); }
+    .match-date-sep {
+      font-size:0.65rem; font-weight:700; letter-spacing:0.12em;
+      text-transform:uppercase; color:#aaa; padding:10px 0 4px;
+      border-top:1px solid rgba(0,0,0,0.07); margin-top:8px;
+    }
+    .match-date-sep:first-child { border-top:none; margin-top:0; padding-top:0; }
+  </style>
+</head>
+<body>
+
+<!-- WELCOME BANNER -->
+<div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
+  <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
+    ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
+    Feedback is appreciated — if you're sending an email, please include the version number (v4.3).
+    Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
+    &nbsp;Many thanks — Tom.
+  </div>
+  <button onclick="document.getElementById('welcome-banner').style.display='none'" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);color:#fff;font-size:1.6rem;cursor:pointer;padding:4px 12px;border-radius:8px;flex-shrink:0;line-height:1" aria-label="Dismiss">✕</button>
+</div>
+
+<!-- TROPHY KALEIDOSCOPE -->
+<div id="trophy-bg"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <!-- Confetti dots -->
+  <div class="confetti-dot" style="width:12px;height:12px;background:#FFD700;top:18%;left:8%;animation-delay:0s"></div>
+  <div class="confetti-dot" style="width:8px;height:8px;background:#fff;top:35%;left:14%;animation-delay:0.5s"></div>
+  <div class="confetti-dot" style="width:10px;height:10px;background:#4ade80;top:60%;left:6%;animation-delay:1s"></div>
+  <div class="confetti-dot" style="width:14px;height:14px;background:#FFD700;top:20%;right:10%;animation-delay:0.3s"></div>
+  <div class="confetti-dot" style="width:8px;height:8px;background:#fff;top:55%;right:8%;animation-delay:0.8s"></div>
+  <div class="confetti-dot" style="width:10px;height:10px;background:#f87171;top:75%;right:15%;animation-delay:1.3s"></div>
+  <div class="confetti-dot" style="width:6px;height:6px;background:#FFD700;top:80%;left:20%;animation-delay:0.7s"></div>
+
+  <div class="hero-eyebrow">⚽ &nbsp; FIFA Official Tournament &nbsp; ⚽</div>
+  <div class="hero-title">FIFA World Cup <span>2026™</span></div>
+  <div class="hero-sub">USA · Canada · Mexico</div>
+  <div class="hero-badges">
+    <span class="hero-badge" onclick="switchView('city')" style="cursor:pointer" title="Browse games by host city">🏟 16 Host Cities</span>
+    <span class="hero-badge" onclick="switchView('team')" style="cursor:pointer" title="Browse by nation">🌍 48 Nations</span>
+    <span class="hero-badge">⚽ 104 Matches</span>
+    <span class="hero-badge">🏆 June 11 – July 26</span>
+  </div>
+</div>
+
+<!-- DATE STRIP -->
+<div class="date-bar">
+  <div class="month-label" id="month-label">June 2026</div>
+  <div class="strip-row">
+    <div class="strip-arrow" id="strip-left">&#8249;</div>
+    <div class="strip-window" id="strip-window">
+      <div class="strip-inner" id="strip-inner"></div>
+    </div>
+    <div class="strip-arrow" id="strip-right">&#8250;</div>
+  </div>
+  <div class="view-tabs">
+    <button class="view-tab active" id="tab-date" onclick="switchView('date')">By Date</button>
+    <button class="view-tab"        id="tab-team" onclick="switchView('team')">By Nation</button>
+    <button class="view-tab"        id="tab-city" onclick="switchView('city')">By City</button>
+  </div>
+</div>
+
+<!-- MATCHES -->
+<div id="matches-section" class="matches-section">
+  <div class="loading-msg">Loading matches…</div>
+</div>
+
+<!-- LINEUP PANEL -->
+<div id="lineup-panel" class="lineup-panel" style="display:none;"></div>
+
+<script>
+// ── FLAGS ─────────────────────────────────────────────────────────────────────
+// ISO 3166-1 alpha-2 codes → flagcdn.com PNG images
+const FLAG_CODES = {
+  "Mexico":"mx","South Africa":"za","South Korea":"kr","Czechia":"cz",
+  "USA":"us","United States":"us","Brazil":"br","Argentina":"ar",
+  "France":"fr","Germany":"de","England":"gb-eng","Spain":"es",
+  "Portugal":"pt","Netherlands":"nl","Japan":"jp","Morocco":"ma",
+  "Canada":"ca","Ecuador":"ec","Senegal":"sn","Croatia":"hr",
+  "Denmark":"dk","Uruguay":"uy","Switzerland":"ch","Belgium":"be",
+  "Colombia":"co","Australia":"au","Poland":"pl","Saudi Arabia":"sa",
+  "Iran":"ir","Cameroon":"cm","Ghana":"gh","Nigeria":"ng",
+  "Tunisia":"tn","Egypt":"eg","Algeria":"dz","Serbia":"rs",
+  "Ukraine":"ua","Turkey":"tr","Austria":"at","Chile":"cl",
+  "Peru":"pe","Costa Rica":"cr","Panama":"pa","Honduras":"hn",
+  "Jamaica":"jm","New Zealand":"nz","Indonesia":"id","Venezuela":"ve",
+  "Paraguay":"py","Bolivia":"bo","Guatemala":"gt","El Salvador":"sv",
+  "Scotland":"gb-sct","Wales":"gb-wls","Northern Ireland":"gb-nir",
+  "United Arab Emirates":"ae","Iraq":"iq","Qatar":"qa","Bahrain":"bh",
+  "Kenya":"ke","Mali":"ml","Ivory Coast":"ci","DR Congo":"cd",
+  "Libya":"ly","Zimbabwe":"zw","Zambia":"zm","Tanzania":"tz",
+};
+// Returns an <img> tag. size = flagcdn width bucket: 20,40,80,160
+function flagImg(name, size) {
+  const code = FLAG_CODES[name];
+  if (!code) return '';
+  return `<img src="https://flagcdn.com/w${size}/${code}.png" alt="${name}" class="flag-img flag-${size}">`;
+}
+
+// ── PLAYER DATA ───────────────────────────────────────────────────────────────
+// League for each athlete (keyed by ESPN athlete ID)
+const LEAGUE_DATA = {
+  "264751": "Championship",
+  "305552": "Eredivisie",
+  "227682": "Liga Profesional",
+  "370744": "Czech Liga",
+  "249299": "Premier League",
+  "270505": "MLS",
+  "290591": "Ligue 1",
+  "308524": "Bundesliga",
+  "358744": "PSL",
+  "282229": "Premier League",
+  "212824": "Liga MX",
+  "94976": "BRA.2",
+  "280612": "MLS",
+  "207011": "Super League Greece",
+  "149945": "MLS",
+  "233075": "Liga MX",
+  "333310": "Ligue 1",
+  "245918": "Eredivisie",
+  "290116": "Serie A",
+  "379012": "Ligue 1",
+  "333399": "Eredivisie",
+  "294618": "Czech Liga",
+  "280061": "Eredivisie",
+  "248276": "MLS",
+  "305669": "Ligue 1",
+  "320212": "FRA.2",
+  "265977": "MLS",
+  "310715": "FRA.2",
+  "388522": "Ligue 1",
+  "166323": "Liga Profesional",
+  "184221": "MLS",
+  "360062": "Premier League",
+  "125514": "Brasileirão",
+  "45843": "MLS",
+  "90721": "K League 1",
+  "287078": "Ligue 1",
+  "259653": "Premier League",
+  "387865": "Czech Liga",
+  "251400": "Premier League",
+  "197631": "Ligue 1",
+  "184206": "Brasileirão",
+  "409016": "Bundesliga",
+  "289120": "Eredivisie",
+  "231182": "Premier League",
+  "188452": "FIFA.FRIENDLY",
+  "286214": "MLS",
+  "335203": "Eredivisie",
+  "118395": "Brasileirão",
+  "102167": "CONCACAF.CENTRAL.AMERICAN.CUP",
+  "218703": "Ligue 1",
+  "159042": "Liga MX",
+  "297270": "K League 1",
+  "241031": "MLS",
+  "174322": "Ligue 1",
+  "236368": "Liga MX",
+  "304793": "K League 1",
+  "306553": "FIFA.FRIENDLY",
+  "217079": "Liga Profesional",
+  "336809": "La Liga",
+  "166473": "Ligue 1",
+  "230626": "MLS",
+  "249525": "Eredivisie",
+  "304212": "Ligue 1",
+  "235789": "NOR.1",
+  "305545": "Ligue 1",
+  "275007": "FRA.2",
+  "307861": "NED.2",
+  "257336": "Czech Liga",
+  "188368": "Brasileirão",
+  "20975": "Ligue 1",
+  "196200": "Ligue 1",
+  "207921": "Liga Profesional",
+  "313399": "PSL",
+  "216418": "Liga Promerica",
+  "290517": "Eredivisie",
+  "154853": "Brasileirão",
+  "260775": "Bundesliga",
+  "359370": "Bundesliga",
+  "157046": "PSL",
+  "236890": "MLS",
+  "274296": "MLS",
+  "265234": "Ligue 1",
+  "340539": "ECU.1",
+  "290899": "Liga MX",
+  "378491": "Ligue 1",
+  "250166": "Premier League",
+  "227441": "Eredivisie",
+  "345988": "Ligue 1",
+  "256598": "K League 1",
+  "291697": "MLS",
+  "324991": "Premier League",
+  "133993": "Allsvenskan",
+  "325549": "Eredivisie",
+  "239566": "Brasileirão",
+  "365623": "PSL",
+  "257390": "Bundesliga",
+  "297150": "Liga MX",
+  "251963": "Brasileirão",
+  "181657": "Brasileirão",
+  "288897": "Ligue 1",
+  "171771": "Liga MX",
+  "291608": "MLS",
+  "291141": "PSL",
+  "264828": "Premier League",
+  "252974": "MLS",
+  "310027": "Czech Liga",
+  "297542": "Eredivisie",
+  "303748": "Premier League",
+  "307756": "Liga Profesional",
+  "387044": "Ligue 1",
+  "208421": "Liga Profesional",
+  "170369": "Brasileirão",
+  "235662": "Premier League",
+  "216617": "MLS",
+  "191209": "Premier League",
+  "357145": "Allsvenskan",
+  "121842": "Categoría Primera A",
+  "254032": "Liga Profesional",
+  "318577": "Ligue 1",
+  "301441": "FIFA.FRIENDLY",
+  "333939": "MLS",
+  "164262": "División Profesional",
+  "285452": "MLS",
+  "286665": "Liga MX",
+  "376110": "Liga MX",
+  "271702": "K League 1",
+  "303538": "Primera División",
+  "124521": "Primera División",
+  "214596": "Ligue 1",
+  "242614": "Liga MX",
+  "101934": "MLS",
+  "303312": "Bundesliga",
+  "212330": "Bundesliga",
+  "174466": "MLS",
+  "238262": "Premier League",
+  "164126": "Ligue 1",
+  "405591": "MLS",
+  "320760": "Ligue 1",
+  "196230": "PSL",
+  "174550": "Bundesliga",
+  "343733": "Bundesliga",
+  "297296": "Eredivisie",
+  "197401": "FRA.2",
+  "38721": "Ligue 1",
+  "288771": "PSL",
+  "277313": "Eredivisie",
+  "103485": "Eredivisie",
+  "325410": "Eredivisie",
+  "319267": "Czech Liga",
+  "238033": "Eredivisie",
+  "317285": "FIFA.FRIENDLY",
+  "306008": "Czech Liga",
+  "309638": "Ligue 1",
+  "265969": "Liga MX",
+  "287005": "Ligue 1",
+  "224323": "Liga MX",
+  "340678": "Ligue 1",
+  "109962": "Brasileirão",
+  "132098": "Liga MX",
+  "175921": "J1 League",
+  "373927": "Ligue 1",
+  "186121": "PSL",
+  "238088": "NOR.1",
+  "276218": "FIFA.FRIENDLY",
+  "330924": "Brasileirão",
+  "202099": "Ligue 1",
+  "280885": "Belgian Pro League",
+  "270807": "NED.2",
+  "336178": "Chinese Super League",
+  "277385": "Premier League",
+  "84774": "Bundesliga",
+  "389575": "Liga MX",
+  "190375": "División Profesional",
+  "274277": "Eredivisie",
+  "199101": "Brasileirão",
+  "291014": "Liga FUTVE",
+  "303726": "Czech Liga",
+  "341711": "Eredivisie",
+  "145190": "Ligue 1",
+  "276767": "PSL",
+  "304736": "MLS",
+  "270829": "ECU.1",
+  "155913": "Primera División",
+  "262111": "Brasileirão",
+  "350711": "Scottish Premiership",
+  "303794": "MLS",
+  "231098": "MLS",
+  "297299": "FIFA.FRIENDLY",
+  "266125": "PSL",
+  "273295": "NED.2",
+  "318090": "Premier League",
+  "157892": "Premier League",
+  "282643": "Ligue 1",
+  "245243": "Ligue 1",
+  "379193": "Eredivisie",
+  "240965": "Eredivisie",
+  "270229": "Liga MX",
+  "157688": "Bundesliga",
+  "173896": "Premier League",
+  "319161": "Ligue 1",
+  "238763": "Liga MX",
+  "265874": "MLS",
+  "236957": "Ligue 1",
+  "361211": "PSL",
+  "230244": "K League 1",
+  "249524": "Premier League",
+  "145405": "Brasileirão",
+  "234715": "Brasileirão",
+  "283827": "Liga MX",
+  "149981": "Premier League",
+  "318554": "MLS",
+  "119413": "División Profesional",
+  "340228": "MLS",
+  "264484": "Ligue 1",
+  "303821": "Bundesliga",
+  "238016": "Eredivisie",
+  "357719": "Brasileirão",
+  "213181": "Ligue 1",
+  "257754": "Liga Profesional",
+  "251634": "Premier League",
+  "256691": "PSL",
+  "169189": "Bundesliga",
+  "258270": "Ligue 1",
+  "276329": "Bundesliga",
+  "310593": "PSL",
+  "230666": "Premier League",
+  "269844": "Premier League",
+  "82816": "MLS",
+  "147193": "La Liga",
+  "303577": "Liga Profesional",
+  "274197": "Ligue 1",
+  "196176": "Premier League",
+  "287266": "Premier League",
+  "276659": "Czech Liga",
+  "231059": "MLS",
+  "357205": "Ligue 1",
+  "390448": "PSL",
+  "199988": "Czech Liga",
+  "276279": "Eredivisie",
+  "295771": "MLS",
+  "282230": "Ligue 1",
+  "228595": "PSL",
+  "222793": "Bundesliga",
+  "188052": "Bundesliga",
+  "167213": "FIFA.FRIENDLY",
+  "300912": "La Liga",
+  "346636": "Ligue 1",
+  "280060": "K League 1",
+  "297788": "K League 1",
+  "159255": "Brasileirão",
+  "256560": "Brasileirão",
+  "215401": "Premier League",
+  "392320": "MLS",
+  "241627": "Premier League",
+  "176058": "Liga Profesional",
+  "179187": "Ligue 1",
+  "359651": "Ligue 1",
+  "246281": "FIFA.FRIENDLY",
+  "266291": "Eredivisie",
+  "196876": "Premier League",
+  "355061": "Ligue 1",
+  "153115": "Liga Profesional",
+  "366883": "NOR.1",
+  "265099": "Ligue 1",
+  "152479": "Premier League",
+  "255295": "Liga Profesional",
+  "178746": "Liga MX",
+  "304572": "Eredivisie",
+  "255723": "J1 League",
+  "301456": "Eredivisie",
+  "156146": "Eredivisie",
+  "266057": "Ligue 1",
+  "314164": "Allsvenskan",
+  "335450": "PSL",
+  "188106": "ECU.1",
+  "302793": "K League 1",
+  "358746": "Liga Profesional",
+  "287035": "Brasileirão",
+  "336388": "Ligue 1",
+  "303281": "NOR.1",
+  "345581": "Ligue 1",
+  "292062": "Premier League",
+  "216287": "NED.2",
+  "104943": "Premier League",
+  "159047": "Ligue 1",
+  "138183": "CONCACAF.CENTRAL.AMERICAN.CUP",
+  "287572": "Ligue 1",
+  "137038": "Liga MX",
+  "205924": "NOR.1",
+  "236721": "Bundesliga",
+  "301516": "Brasileirão",
+  "297802": "FRA.2",
+  "262738": "NED.2",
+  "287723": "NOR.1",
+  "211669": "Ligue 1",
+  "179767": "Brasileirão",
+  "301648": "Liga Profesional",
+  "178273": "FIFA.FRIENDLY",
+  "203067": "Liga MX",
+  "235401": "USA.USL.1",
+  "286268": "J1 League",
+  "292169": "Bundesliga",
+  "108622": "Liga Profesional",
+  "266554": "ENG.2",
+  "256724": "K League 1",
+  "288563": "ARG.3",
+  "119082": "J1 League",
+  "237224": "Premier League",
+  "142200": "Bundesliga",
+  "277128": "MLS",
+  "253992": "Ligue 1",
+  "301449": "Premier League",
+  "77072": "Ligue 1",
+  "150451": "Ligue 1",
+  "177058": "NED.2",
+  "328238": "Ligue 1",
+  "209581": "Premier League",
+  "177780": "Liga Profesional",
+  "293236": "Premier League",
+  "310925": "FIFA.FRIENDLY",
+  "276942": "Liga MX",
+  "328541": "Eredivisie",
+  "359132": "Eredivisie",
+  "48128": "MLS",
+  "288896": "Ligue 1",
+  "146290": "MLS",
+  "265713": "PSL",
+  "297791": "K League 1",
+  "262109": "NED.2",
+  "258906": "Premier League",
+  "344517": "Ligue 1",
+  "345769": "K League 1",
+  "116825": "MLS",
+  "290414": "Liga MX",
+  "362208": "K League 1",
+  "343937": "Czech Liga",
+  "201919": "Liga MX",
+  "249768": "MLS",
+  "359542": "MLS",
+  "303464": "Bundesliga",
+  "136865": "La Liga",
+  "203669": "Premier League",
+  "127444": "FIFA.FRIENDLY",
+  "167192": "Ligue 1",
+  "89090": "FRA.2",
+  "134103": "Bundesliga",
+  "399687": "Liga Profesional",
+  "185147": "Liga MX",
+  "241029": "Ligue 1",
+  "351372": "MLS",
+  "138664": "FIFA.FRIENDLY",
+  "151714": "Czech Liga",
+  "231572": "ENG.2",
+  "301653": "Brasileirão",
+  "188411": "FIFA.FRIENDLY",
+  "224786": "Eredivisie",
+  "289046": "Brasileirão",
+  "319422": "Brasileirão",
+  "265953": "FRA.2",
+  "358975": "Ligue 1",
+  "329690": "Ligue 1",
+  "159382": "MLS",
+  "267996": "ECU.1",
+  "207343": "La Liga",
+  "132948": "Brasileirão",
+  "253173": "Premier League",
+  "228294": "NOR.1",
+  "271294": "Liga FUTVE",
+  "172137": "J1 League",
+  "238004": "Eredivisie",
+  "251889": "Brasileirão",
+  "359946": "CONCACAF.CHAMPIONS",
+  "280555": "Premier League",
+  "312924": "J1 League",
+  "219508": "Liga MX",
+  "104497": "Liga MX",
+  "302434": "Belgian Pro League",
+  "259743": "Ligue 1",
+  "164756": "Liga Profesional",
+  "340240": "Premier League",
+  "222628": "Ligue 1",
+  "190161": "Bundesliga",
+  "193566": "Liga MX",
+  "335996": "Primeira Liga",
+  "326183": "FRA.2",
+  "400594": "MLS",
+  "167060": "Premier League",
+  "322510": "Serie A",
+  "281316": "Primera División",
+  "3098209": "K League 1",
+  "254007": "Brasileirão",
+  "97111": "Bundesliga",
+  "144325": "Liga MX",
+  "303693": "MLS",
+  "274632": "Premier League",
+  "199381": "Ligue 1",
+  "257489": "Ligue 1",
+  "165637": "Czech Liga",
+  "198983": "Brasileirão",
+  "241466": "Categoría Primera A",
+  "195226": "La Liga",
+  "312261": "J1 League",
+  "285756": "Liga MX",
+  "297177": "USA.USL.1",
+  "195326": "Liga MX",
+  "301321": "PSL",
+  "174980": "Premier League",
+  "228262": "Liga Profesional",
+  "311743": "Brasileirão",
+  "202501": "MLS",
+  "194308": "Liga MX",
+  "131726": "ECU.1",
+  "229487": "Liga MX",
+  "324270": "MLS",
+  "312876": "MLS",
+  "259975": "Serie A",
+  "223818": "PSL",
+  "313976": "MLS",
+  "332367": "MLS",
+  "177042": "Eredivisie",
+  "180113": "MLS",
+  "240233": "Ligue 1",
+  "403974": "Czech Liga",
+  "229744": "Ligue 1",
+  "297328": "MLS",
+  "265915": "Premier League",
+  "286831": "Bundesliga",
+  "270641": "Premier League",
+  "287497": "MLS",
+  "328403": "Liga Nacional",
+  "277352": "Brasileirão",
+  "337134": "PSL",
+  "306764": "Brasileirão",
+  "178433": "FIFA.FRIENDLY",
+  "236322": "Premier League",
+  "208700": "Brasileirão"
+};
+
+const PLAYER_DATA = {
+  "264751": {
+    "club": "Burnley FC",
+    "salary": "~$3.2M"
+  },
+  "305552": {
+    "club": "Ajax Amsterdam"
+  },
+  "227682": {
+    "club": "Lanús"
+  },
+  "370744": {
+    "club": "Slavia Prague",
+    "salary": "~$0.6M"
+  },
+  "249299": {
+    "club": "Liverpool"
+  },
+  "270505": {
+    "club": "LAFC"
+  },
+  "290591": {
+    "club": "Paris Saint-Germain"
+  },
+  "308524": {
+    "club": "Bayern Munich"
+  },
+  "358744": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$0.8M"
+  },
+  "282229": {
+    "club": "Sunderland"
+  },
+  "212824": {
+    "club": "América"
+  },
+  "94976": {
+    "club": "Athletico Paranaense"
+  },
+  "280612": {
+    "club": "Austin FC"
+  },
+  "207011": {
+    "club": "AEK Athens",
+    "salary": "~$2.8M"
+  },
+  "149945": {
+    "club": "LAFC",
+    "salary": "~$8.0M"
+  },
+  "233075": {
+    "club": "Club America",
+    "salary": "~$2.5M"
+  },
+  "333310": {
+    "club": "Lyon"
+  },
+  "245918": {
+    "club": "PSV Eindhoven"
+  },
+  "290116": {
+    "club": "Torino FC",
+    "salary": "~$2.0M"
+  },
+  "379012": {
+    "club": "Strasbourg"
+  },
+  "333399": {
+    "club": "PSV Eindhoven"
+  },
+  "294618": {
+    "club": "Slavia Prague",
+    "salary": "~$1.2M"
+  },
+  "280061": {
+    "club": "Feyenoord Rotterdam",
+    "salary": "~$4.0M"
+  },
+  "248276": {
+    "club": "Orlando City SC"
+  },
+  "305669": {
+    "club": "Stade Rennais"
+  },
+  "320212": {
+    "club": "AS Nancy Lorraine"
+  },
+  "265977": {
+    "club": "Orlando City SC"
+  },
+  "310715": {
+    "club": "Sochaux"
+  },
+  "388522": {
+    "club": "Paris Saint-Germain"
+  },
+  "166323": {
+    "club": "Vélez Sarsfield"
+  },
+  "184221": {
+    "club": "Toronto FC"
+  },
+  "360062": {
+    "club": "Sunderland"
+  },
+  "125514": {
+    "club": "Flamengo"
+  },
+  "45843": {
+    "club": "Inter Miami CF"
+  },
+  "90721": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.4M"
+  },
+  "287078": {
+    "club": "Nice"
+  },
+  "259653": {
+    "club": "Leeds United"
+  },
+  "387865": {
+    "club": "FK Jablonec",
+    "salary": "~$0.4M"
+  },
+  "251400": {
+    "club": "Arsenal"
+  },
+  "197631": {
+    "club": "Le Havre AC"
+  },
+  "184206": {
+    "club": "Internacional"
+  },
+  "409016": {
+    "club": "Bayern Munich"
+  },
+  "289120": {
+    "club": "PSV Eindhoven"
+  },
+  "231182": {
+    "club": "Arsenal"
+  },
+  "188452": {
+    "club": "Curaçao"
+  },
+  "286214": {
+    "club": "LAFC"
+  },
+  "335203": {
+    "club": "NEC Nijmegen"
+  },
+  "118395": {
+    "club": "Palmeiras"
+  },
+  "102167": {
+    "club": "Plaza Amador"
+  },
+  "218703": {
+    "club": "Angers"
+  },
+  "159042": {
+    "club": "Tigres UANL"
+  },
+  "297270": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.3M"
+  },
+  "241031": {
+    "club": "New York City FC"
+  },
+  "174322": {
+    "club": "Lille"
+  },
+  "236368": {
+    "club": "Santos",
+    "salary": "~$1.2M"
+  },
+  "304793": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.3M"
+  },
+  "306553": {
+    "club": "Curaçao"
+  },
+  "217079": {
+    "club": "Huracán"
+  },
+  "336809": {
+    "club": "Real Betis"
+  },
+  "166473": {
+    "club": "Lille"
+  },
+  "230626": {
+    "club": "Toronto FC"
+  },
+  "249525": {
+    "club": "FC Twente",
+    "salary": "~$3.0M"
+  },
+  "304212": {
+    "club": "AJ Auxerre"
+  },
+  "235789": {
+    "club": "Bodo/Glimt"
+  },
+  "305545": {
+    "club": "Lyon",
+    "salary": "~$4.5M"
+  },
+  "275007": {
+    "club": "US Quevilly"
+  },
+  "307861": {
+    "club": "Almere City"
+  },
+  "257336": {
+    "club": "Sparta Prague",
+    "salary": "~$1.0M"
+  },
+  "188368": {
+    "club": "Flamengo"
+  },
+  "20975": {
+    "club": "Strasbourg"
+  },
+  "196200": {
+    "club": "Paris Saint-Germain"
+  },
+  "207921": {
+    "club": "Huracán"
+  },
+  "313399": {
+    "club": "Sekhukhune United",
+    "salary": "~$0.4M"
+  },
+  "216418": {
+    "club": "Saprissa"
+  },
+  "290517": {
+    "club": "FC Twente"
+  },
+  "154853": {
+    "club": "Santos"
+  },
+  "260775": {
+    "club": "Bayer Leverkusen",
+    "salary": "~$12.0M"
+  },
+  "359370": {
+    "club": "Bayern Munich"
+  },
+  "157046": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$1.2M"
+  },
+  "236890": {
+    "club": "Chicago Fire FC"
+  },
+  "274296": {
+    "club": "LAFC"
+  },
+  "265234": {
+    "club": "Nice"
+  },
+  "340539": {
+    "club": "Universidad Católica (Quito)"
+  },
+  "290899": {
+    "club": "Guadalajara",
+    "salary": "~$1.8M"
+  },
+  "378491": {
+    "club": "Strasbourg"
+  },
+  "250166": {
+    "club": "Leeds United"
+  },
+  "227441": {
+    "club": "PEC Zwolle"
+  },
+  "345988": {
+    "club": "Lille"
+  },
+  "256598": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.5M"
+  },
+  "291697": {
+    "club": "New York City FC"
+  },
+  "324991": {
+    "club": "Sunderland"
+  },
+  "133993": {
+    "club": "AIK"
+  },
+  "325549": {
+    "club": "FC Utrecht"
+  },
+  "239566": {
+    "club": "Palmeiras"
+  },
+  "365623": {
+    "club": "Kaizer Chiefs",
+    "salary": "~$0.5M"
+  },
+  "257390": {
+    "club": "Bayern Munich"
+  },
+  "297150": {
+    "club": "Pumas UNAM"
+  },
+  "251963": {
+    "club": "Internacional"
+  },
+  "181657": {
+    "club": "Atlético-MG"
+  },
+  "288897": {
+    "club": "Paris Saint-Germain"
+  },
+  "171771": {
+    "club": "Pachuca"
+  },
+  "291608": {
+    "club": "FC Dallas"
+  },
+  "291141": {
+    "club": "Stellenbosch FC",
+    "salary": "~$0.7M"
+  },
+  "264828": {
+    "club": "Sunderland"
+  },
+  "252974": {
+    "club": "New York City FC"
+  },
+  "310027": {
+    "club": "Sparta Prague",
+    "salary": "~$0.5M"
+  },
+  "297542": {
+    "club": "Telstar"
+  },
+  "303748": {
+    "club": "Liverpool"
+  },
+  "307756": {
+    "club": "River Plate"
+  },
+  "387044": {
+    "club": "Lens"
+  },
+  "208421": {
+    "club": "Independiente"
+  },
+  "170369": {
+    "club": "Flamengo"
+  },
+  "235662": {
+    "club": "Liverpool"
+  },
+  "216617": {
+    "club": "Seattle Sounders FC"
+  },
+  "191209": {
+    "club": "West Ham United",
+    "salary": "~$4.5M"
+  },
+  "357145": {
+    "club": "Mjällby AIF"
+  },
+  "121842": {
+    "club": "Atlético Nacional"
+  },
+  "254032": {
+    "club": "River Plate"
+  },
+  "318577": {
+    "club": "Lille"
+  },
+  "301441": {
+    "club": "Curaçao"
+  },
+  "333939": {
+    "club": "Philadelphia Union"
+  },
+  "164262": {
+    "club": "Cerro Porteño"
+  },
+  "285452": {
+    "club": "Minnesota United FC"
+  },
+  "286665": {
+    "club": "Tijuana"
+  },
+  "376110": {
+    "club": "Guadalajara",
+    "salary": "~$0.8M"
+  },
+  "271702": {
+    "club": "Ulsan HD FC",
+    "salary": "~$0.6M"
+  },
+  "303538": {
+    "club": "Cobresal"
+  },
+  "124521": {
+    "club": "Nacional"
+  },
+  "214596": {
+    "club": "Paris Saint-Germain"
+  },
+  "242614": {
+    "club": "Guadalajara",
+    "salary": "~$1.8M"
+  },
+  "101934": {
+    "club": "Minnesota United FC"
+  },
+  "303312": {
+    "club": "Bayer Leverkusen",
+    "salary": "~$4.5M"
+  },
+  "212330": {
+    "club": "Bayer Leverkusen",
+    "salary": "~$9.0M"
+  },
+  "174466": {
+    "club": "Inter Miami CF"
+  },
+  "238262": {
+    "club": "Arsenal"
+  },
+  "164126": {
+    "club": "Stade Rennais"
+  },
+  "405591": {
+    "club": "Vancouver Whitecaps"
+  },
+  "320760": {
+    "club": "Strasbourg"
+  },
+  "196230": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$1.5M"
+  },
+  "174550": {
+    "club": "Bayern Munich"
+  },
+  "343733": {
+    "club": "RB Leipzig",
+    "salary": "~$3.5M"
+  },
+  "297296": {
+    "club": "PSV Eindhoven"
+  },
+  "197401": {
+    "club": "Nantes"
+  },
+  "38721": {
+    "club": "AS Monaco"
+  },
+  "288771": {
+    "club": "Polokwane City",
+    "salary": "~$0.5M"
+  },
+  "277313": {
+    "club": "PSV Eindhoven",
+    "salary": "~$4.0M"
+  },
+  "103485": {
+    "club": "PSV Eindhoven"
+  },
+  "325410": {
+    "club": "PSV Eindhoven"
+  },
+  "319267": {
+    "club": "FC Viktoria Plzen",
+    "salary": "~$0.6M"
+  },
+  "238033": {
+    "club": "Ajax Amsterdam"
+  },
+  "317285": {
+    "club": "Curaçao"
+  },
+  "306008": {
+    "club": "Sparta Prague",
+    "salary": "~$1.2M"
+  },
+  "309638": {
+    "club": "AJ Auxerre"
+  },
+  "265969": {
+    "club": "Pumas UNAM",
+    "salary": "~$1.4M"
+  },
+  "287005": {
+    "club": "Paris Saint-Germain"
+  },
+  "224323": {
+    "club": "Monterrey",
+    "salary": "~$2.8M"
+  },
+  "340678": {
+    "club": "Strasbourg"
+  },
+  "109962": {
+    "club": "Palmeiras"
+  },
+  "132098": {
+    "club": "Toluca",
+    "salary": "~$2.5M"
+  },
+  "175921": {
+    "club": "FC Tokyo",
+    "salary": "~$0.8M"
+  },
+  "373927": {
+    "club": "Lille"
+  },
+  "186121": {
+    "club": "Kaizer Chiefs",
+    "salary": "~$0.6M"
+  },
+  "238088": {
+    "club": "Bodo/Glimt"
+  },
+  "276218": {
+    "club": "Curaçao"
+  },
+  "330924": {
+    "club": "Vasco da Gama"
+  },
+  "202099": {
+    "club": "Stade Rennais"
+  },
+  "280885": {
+    "club": "Club Brugge",
+    "salary": "~$3.5M"
+  },
+  "270807": {
+    "club": "RKC Waalwijk"
+  },
+  "336178": {
+    "club": "Zhejiang Professional FC",
+    "salary": "~$1.8M"
+  },
+  "277385": {
+    "club": "Arsenal"
+  },
+  "84774": {
+    "club": "Bayern Munich"
+  },
+  "389575": {
+    "club": "Tijuana",
+    "salary": "~$0.9M"
+  },
+  "190375": {
+    "club": "Club Olimpia"
+  },
+  "274277": {
+    "club": "Feyenoord Rotterdam"
+  },
+  "199101": {
+    "club": "Grêmio"
+  },
+  "291014": {
+    "club": "Academia Puerto Cabello"
+  },
+  "303726": {
+    "club": "Slavia Prague",
+    "salary": "~$0.9M"
+  },
+  "341711": {
+    "club": "Feyenoord Rotterdam"
+  },
+  "145190": {
+    "club": "Lyon"
+  },
+  "276767": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$0.9M"
+  },
+  "304736": {
+    "club": "Charlotte FC",
+    "salary": "~$1.8M"
+  },
+  "270829": {
+    "club": "Independiente del Valle"
+  },
+  "155913": {
+    "club": "Universidad de Concepción"
+  },
+  "262111": {
+    "club": "Atlético-MG"
+  },
+  "350711": {
+    "club": "Celtic FC",
+    "salary": "~$2.5M"
+  },
+  "303794": {
+    "club": "New England Revolution"
+  },
+  "231098": {
+    "club": "Toronto FC"
+  },
+  "297299": {
+    "club": "Curaçao"
+  },
+  "266125": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$0.9M"
+  },
+  "273295": {
+    "club": "RKC Waalwijk"
+  },
+  "318090": {
+    "club": "Sunderland"
+  },
+  "157892": {
+    "club": "Liverpool"
+  },
+  "282643": {
+    "club": "AS Monaco"
+  },
+  "245243": {
+    "club": "Marseille"
+  },
+  "379193": {
+    "club": "AZ Alkmaar",
+    "salary": "~$1.2M"
+  },
+  "240965": {
+    "club": "PSV Eindhoven"
+  },
+  "270229": {
+    "club": "Cruz Azul"
+  },
+  "157688": {
+    "club": "Bayern Munich",
+    "salary": "~$14.0M"
+  },
+  "173896": {
+    "club": "Liverpool"
+  },
+  "319161": {
+    "club": "Nice"
+  },
+  "238763": {
+    "club": "FC Juarez"
+  },
+  "265874": {
+    "club": "San Diego FC"
+  },
+  "236957": {
+    "club": "Nice"
+  },
+  "361211": {
+    "club": "Orlando Pirates",
+    "salary": "~$1.6M"
+  },
+  "230244": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.5M"
+  },
+  "249524": {
+    "club": "Liverpool"
+  },
+  "145405": {
+    "club": "Flamengo"
+  },
+  "234715": {
+    "club": "Flamengo"
+  },
+  "283827": {
+    "club": "América",
+    "salary": "~$2.8M"
+  },
+  "149981": {
+    "club": "Sunderland"
+  },
+  "318554": {
+    "club": "Seattle Sounders FC",
+    "salary": "~$2.4M"
+  },
+  "119413": {
+    "club": "Cerro Porteño"
+  },
+  "340228": {
+    "club": "Vancouver Whitecaps"
+  },
+  "264484": {
+    "club": "AJ Auxerre"
+  },
+  "303821": {
+    "club": "Bayern Munich"
+  },
+  "238016": {
+    "club": "NEC Nijmegen"
+  },
+  "357719": {
+    "club": "Vasco da Gama"
+  },
+  "213181": {
+    "club": "Lyon"
+  },
+  "257754": {
+    "club": "Independiente Rivadavia"
+  },
+  "251634": {
+    "club": "Liverpool"
+  },
+  "256691": {
+    "club": "SuperSport United",
+    "salary": "~$1.0M"
+  },
+  "169189": {
+    "club": "Bayern Munich"
+  },
+  "258270": {
+    "club": "Le Havre AC"
+  },
+  "276329": {
+    "club": "Bayern Munich"
+  },
+  "310593": {
+    "club": "Cape Town City",
+    "salary": "~$0.5M"
+  },
+  "230666": {
+    "club": "West Ham United",
+    "salary": "~$6.0M"
+  },
+  "269844": {
+    "club": "Arsenal"
+  },
+  "82816": {
+    "club": "Minnesota United FC"
+  },
+  "147193": {
+    "club": "Real Betis"
+  },
+  "303577": {
+    "club": "River Plate",
+    "salary": "~$2.2M"
+  },
+  "274197": {
+    "club": "Paris Saint-Germain",
+    "salary": "~$12.0M"
+  },
+  "196176": {
+    "club": "Arsenal"
+  },
+  "287266": {
+    "club": "Arsenal"
+  },
+  "276659": {
+    "club": "Banik Ostrava",
+    "salary": "~$0.5M"
+  },
+  "231059": {
+    "club": "Inter Miami CF"
+  },
+  "357205": {
+    "club": "Nice"
+  },
+  "390448": {
+    "club": "AmaZulu FC",
+    "salary": "~$0.5M"
+  },
+  "199988": {
+    "club": "Slavia Prague",
+    "salary": "~$1.5M"
+  },
+  "276279": {
+    "club": "Feyenoord Rotterdam"
+  },
+  "295771": {
+    "club": "Vancouver Whitecaps"
+  },
+  "282230": {
+    "club": "Marseille"
+  },
+  "228595": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$0.8M"
+  },
+  "222793": {
+    "club": "Bayern Munich"
+  },
+  "188052": {
+    "club": "Bayern Munich"
+  },
+  "167213": {
+    "club": "Curaçao"
+  },
+  "300912": {
+    "club": "Real Betis"
+  },
+  "346636": {
+    "club": "Strasbourg"
+  },
+  "280060": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.5M"
+  },
+  "297788": {
+    "club": "FC Seoul",
+    "salary": "~$0.4M"
+  },
+  "159255": {
+    "club": "Corinthians"
+  },
+  "256560": {
+    "club": "Atlético-MG"
+  },
+  "215401": {
+    "club": "Sunderland"
+  },
+  "392320": {
+    "club": "Colorado Rapids"
+  },
+  "241627": {
+    "club": "West Ham United",
+    "salary": "~$8.5M"
+  },
+  "176058": {
+    "club": "Instituto (Córdoba)"
+  },
+  "179187": {
+    "club": "Lille"
+  },
+  "359651": {
+    "club": "Lille"
+  },
+  "246281": {
+    "club": "Curaçao"
+  },
+  "266291": {
+    "club": "PSV Eindhoven"
+  },
+  "196876": {
+    "club": "Liverpool"
+  },
+  "355061": {
+    "club": "Paris Saint-Germain"
+  },
+  "153115": {
+    "club": "Boca Juniors"
+  },
+  "366883": {
+    "club": "Molde",
+    "salary": "~$0.6M"
+  },
+  "265099": {
+    "club": "Lorient"
+  },
+  "152479": {
+    "club": "Liverpool"
+  },
+  "255295": {
+    "club": "Rosario Central"
+  },
+  "178746": {
+    "club": "Cruz Azul",
+    "salary": "~$3.8M"
+  },
+  "304572": {
+    "club": "PSV Eindhoven"
+  },
+  "255723": {
+    "club": "Sanfrecce Hiroshima"
+  },
+  "301456": {
+    "club": "Sparta Rotterdam"
+  },
+  "156146": {
+    "club": "PEC Zwolle"
+  },
+  "266057": {
+    "club": "AJ Auxerre"
+  },
+  "314164": {
+    "club": "Malmö FF"
+  },
+  "335450": {
+    "club": "Chippa United",
+    "salary": "~$0.4M"
+  },
+  "188106": {
+    "club": "Liga de Quito"
+  },
+  "302793": {
+    "club": "Suwon Samsung Bluewings",
+    "salary": "~$0.4M"
+  },
+  "358746": {
+    "club": "River Plate"
+  },
+  "287035": {
+    "club": "Red Bull Bragantino"
+  },
+  "336388": {
+    "club": "Paris Saint-Germain"
+  },
+  "303281": {
+    "club": "Viking FK"
+  },
+  "345581": {
+    "club": "Paris Saint-Germain"
+  },
+  "292062": {
+    "club": "Arsenal"
+  },
+  "216287": {
+    "club": "FC Volendam"
+  },
+  "104943": {
+    "club": "Liverpool"
+  },
+  "159047": {
+    "club": "Paris Saint-Germain"
+  },
+  "138183": {
+    "club": "Plaza Amador"
+  },
+  "287572": {
+    "club": "Paris FC"
+  },
+  "137038": {
+    "club": "Club America",
+    "salary": "~$2.5M"
+  },
+  "205924": {
+    "club": "Bodo/Glimt"
+  },
+  "236721": {
+    "club": "Bayern Munich"
+  },
+  "301516": {
+    "club": "São Paulo"
+  },
+  "297802": {
+    "club": "Saint-Étienne"
+  },
+  "262738": {
+    "club": "FC Den Bosch"
+  },
+  "287723": {
+    "club": "Sarpsborg FK"
+  },
+  "211669": {
+    "club": "Le Havre AC"
+  },
+  "179767": {
+    "club": "Flamengo"
+  },
+  "301648": {
+    "club": "San Lorenzo"
+  },
+  "178273": {
+    "club": "Curaçao"
+  },
+  "203067": {
+    "club": "Monterrey"
+  },
+  "235401": {
+    "club": "Colorado Springs Switchbacks FC"
+  },
+  "286268": {
+    "club": "Kashima Antlers",
+    "salary": "~$0.6M"
+  },
+  "292169": {
+    "club": "Bayer Leverkusen",
+    "salary": "~$6.0M"
+  },
+  "108622": {
+    "club": "Estudiantes de La Plata"
+  },
+  "266554": {
+    "club": "Wrexham"
+  },
+  "256724": {
+    "club": "Ulsan HD FC",
+    "salary": "~$0.4M"
+  },
+  "288563": {
+    "club": "Acassuso"
+  },
+  "119082": {
+    "club": "FC Tokyo"
+  },
+  "237224": {
+    "club": "Wolverhampton Wanderers",
+    "salary": "~$5.0M"
+  },
+  "142200": {
+    "club": "Bayern Munich"
+  },
+  "277128": {
+    "club": "FC Dallas"
+  },
+  "253992": {
+    "club": "AS Monaco"
+  },
+  "301449": {
+    "club": "Sunderland"
+  },
+  "77072": {
+    "club": "Toulouse"
+  },
+  "150451": {
+    "club": "Lille"
+  },
+  "177058": {
+    "club": "FC Volendam"
+  },
+  "328238": {
+    "club": "Paris Saint-Germain"
+  },
+  "209581": {
+    "club": "Arsenal"
+  },
+  "177780": {
+    "club": "River Plate"
+  },
+  "293236": {
+    "club": "Arsenal"
+  },
+  "310925": {
+    "club": "Curaçao"
+  },
+  "276942": {
+    "club": "Cruz Azul",
+    "salary": "~$1.6M"
+  },
+  "328541": {
+    "club": "Feyenoord Rotterdam"
+  },
+  "359132": {
+    "club": "Telstar"
+  },
+  "48128": {
+    "club": "Atlanta United FC"
+  },
+  "288896": {
+    "club": "Paris Saint-Germain"
+  },
+  "146290": {
+    "club": "Charlotte FC"
+  },
+  "265713": {
+    "club": "Stellenbosch FC",
+    "salary": "~$0.5M"
+  },
+  "297791": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.4M"
+  },
+  "262109": {
+    "club": "VVV-Venlo"
+  },
+  "258906": {
+    "club": "Arsenal"
+  },
+  "344517": {
+    "club": "Lens"
+  },
+  "345769": {
+    "club": "Ulsan HD FC",
+    "salary": "~$0.4M"
+  },
+  "116825": {
+    "club": "San Diego FC"
+  },
+  "290414": {
+    "club": "América",
+    "salary": "~$1.5M"
+  },
+  "362208": {
+    "club": "Jeonbuk Hyundai Motors",
+    "salary": "~$0.4M"
+  },
+  "343937": {
+    "club": "Slavia Prague",
+    "salary": "~$0.6M"
+  },
+  "201919": {
+    "club": "Mazatlán FC"
+  },
+  "249768": {
+    "club": "FC Cincinnati"
+  },
+  "359542": {
+    "club": "Columbus Crew"
+  },
+  "303464": {
+    "club": "SC Freiburg",
+    "salary": "~$3.0M"
+  },
+  "136865": {
+    "club": "Real Betis"
+  },
+  "203669": {
+    "club": "Arsenal"
+  },
+  "127444": {
+    "club": "Curaçao"
+  },
+  "167192": {
+    "club": "Marseille"
+  },
+  "89090": {
+    "club": "Bastia"
+  },
+  "134103": {
+    "club": "1. FSV Mainz 05",
+    "salary": "~$3.5M"
+  },
+  "399687": {
+    "club": "Talleres (Córdoba)"
+  },
+  "185147": {
+    "club": "Atlas"
+  },
+  "241029": {
+    "club": "Nice"
+  },
+  "351372": {
+    "club": "Philadelphia Union",
+    "salary": "~$0.5M"
+  },
+  "138664": {
+    "club": "Curaçao"
+  },
+  "151714": {
+    "club": "Sparta Prague",
+    "salary": "~$0.8M"
+  },
+  "231572": {
+    "club": "Wrexham"
+  },
+  "301653": {
+    "club": "Palmeiras"
+  },
+  "188411": {
+    "club": "Curaçao"
+  },
+  "224786": {
+    "club": "PEC Zwolle"
+  },
+  "289046": {
+    "club": "Palmeiras"
+  },
+  "319422": {
+    "club": "Atlético-MG"
+  },
+  "265953": {
+    "club": "Stade de Reims"
+  },
+  "358975": {
+    "club": "Nice"
+  },
+  "329690": {
+    "club": "AS Monaco"
+  },
+  "159382": {
+    "club": "Orlando City SC"
+  },
+  "267996": {
+    "club": "Universidad Católica (Quito)"
+  },
+  "207343": {
+    "club": "Real Betis"
+  },
+  "132948": {
+    "club": "Santos"
+  },
+  "253173": {
+    "club": "Leeds United"
+  },
+  "228294": {
+    "club": "Viking FK"
+  },
+  "271294": {
+    "club": "Deportivo La Guaira"
+  },
+  "172137": {
+    "club": "Albirex Niigata"
+  },
+  "238004": {
+    "club": "Ajax Amsterdam"
+  },
+  "251889": {
+    "club": "Flamengo"
+  },
+  "359946": {
+    "club": "Real Hope"
+  },
+  "280555": {
+    "club": "Arsenal"
+  },
+  "312924": {
+    "club": "Kashima Antlers"
+  },
+  "219508": {
+    "club": "Pumas UNAM"
+  },
+  "104497": {
+    "club": "Pachuca",
+    "salary": "~$3.2M"
+  },
+  "302434": {
+    "club": "KAA Gent",
+    "salary": "~$1.5M"
+  },
+  "259743": {
+    "club": "Marseille"
+  },
+  "164756": {
+    "club": "Independiente"
+  },
+  "340240": {
+    "club": "Sunderland"
+  },
+  "222628": {
+    "club": "AS Monaco"
+  },
+  "190161": {
+    "club": "Bayern Munich"
+  },
+  "193566": {
+    "club": "Pumas UNAM",
+    "salary": "~$1.0M"
+  },
+  "335996": {
+    "club": "SL Benfica",
+    "salary": "~$3.5M"
+  },
+  "326183": {
+    "club": "Saint-Étienne"
+  },
+  "400594": {
+    "club": "Chicago Fire FC",
+    "salary": "~$0.7M"
+  },
+  "167060": {
+    "club": "Fulham FC",
+    "salary": "~$6.2M"
+  },
+  "322510": {
+    "club": "ACF Fiorentina",
+    "salary": "~$3.0M"
+  },
+  "281316": {
+    "club": "Peñarol"
+  },
+  "3098209": {
+    "club": "Ulsan HD FC",
+    "salary": "~$0.3M"
+  },
+  "254007": {
+    "club": "Palmeiras"
+  },
+  "97111": {
+    "club": "Bayern Munich"
+  },
+  "144325": {
+    "club": "América"
+  },
+  "303693": {
+    "club": "Chicago Fire FC"
+  },
+  "274632": {
+    "club": "Liverpool"
+  },
+  "199381": {
+    "club": "Lorient"
+  },
+  "257489": {
+    "club": "Stade Rennais"
+  },
+  "165637": {
+    "club": "Slavia Prague",
+    "salary": "~$0.7M"
+  },
+  "198983": {
+    "club": "Grêmio"
+  },
+  "241466": {
+    "club": "Cúcuta Deportivo"
+  },
+  "195226": {
+    "club": "Real Betis"
+  },
+  "312261": {
+    "club": "Machida Zelvia"
+  },
+  "285756": {
+    "club": "América"
+  },
+  "297177": {
+    "club": "El Paso Locomotive FC"
+  },
+  "195326": {
+    "club": "León"
+  },
+  "301321": {
+    "club": "AmaZulu FC",
+    "salary": "~$0.6M"
+  },
+  "174980": {
+    "club": "Arsenal"
+  },
+  "228262": {
+    "club": "River Plate"
+  },
+  "311743": {
+    "club": "Palmeiras"
+  },
+  "202501": {
+    "club": "Vancouver Whitecaps"
+  },
+  "194308": {
+    "club": "Guadalajara",
+    "salary": "~$2.0M"
+  },
+  "131726": {
+    "club": "Liga de Quito"
+  },
+  "229487": {
+    "club": "Toluca",
+    "salary": "~$2.2M"
+  },
+  "324270": {
+    "club": "Orlando City SC"
+  },
+  "312876": {
+    "club": "FC Dallas"
+  },
+  "259975": {
+    "club": "Genoa CFC",
+    "salary": "~$3.5M"
+  },
+  "223818": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$0.8M"
+  },
+  "313976": {
+    "club": "Nashville SC"
+  },
+  "332367": {
+    "club": "Portland Timbers"
+  },
+  "177042": {
+    "club": "Ajax Amsterdam"
+  },
+  "180113": {
+    "club": "Columbus Crew"
+  },
+  "240233": {
+    "club": "Paris Saint-Germain"
+  },
+  "403974": {
+    "club": "Slavia Prague",
+    "salary": "~$0.5M"
+  },
+  "229744": {
+    "club": "Paris Saint-Germain"
+  },
+  "297328": {
+    "club": "Atlanta United FC"
+  },
+  "265915": {
+    "club": "Sunderland"
+  },
+  "286831": {
+    "club": "Bayern Munich"
+  },
+  "270641": {
+    "club": "Leeds United"
+  },
+  "287497": {
+    "club": "Real Salt Lake"
+  },
+  "328403": {
+    "club": "Club Deportivo Marathón"
+  },
+  "277352": {
+    "club": "Flamengo"
+  },
+  "337134": {
+    "club": "Mamelodi Sundowns",
+    "salary": "~$0.6M"
+  },
+  "306764": {
+    "club": "Botafogo"
+  },
+  "178433": {
+    "club": "Curaçao"
+  },
+  "236322": {
+    "club": "Arsenal"
+  },
+  "208700": {
+    "club": "Flamengo"
+  }
+};
+
+// ── DATE SETUP ────────────────────────────────────────────────────────────────
+function generateWCDates() {
+  const dates = [], d = new Date('2026-06-11'), end = new Date('2026-07-26');
+  while (d <= end) { dates.push(new Date(d)); d.setDate(d.getDate()+1); }
+  return dates;
+}
+const WC_DATES  = generateWCDates();
+const TODAY     = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+const DAY_ABBR  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function dateKey(d) { return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; }
+function sameDay(a,b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+let selectedDate = new Date(TODAY);
+if (selectedDate < WC_DATES[0]) selectedDate = new Date(WC_DATES[0]);
+if (selectedDate > WC_DATES[WC_DATES.length-1]) selectedDate = new Date(WC_DATES[WC_DATES.length-1]);
+
+let stripOffset = 0;
+const VISIBLE = 11;
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let selectedEventId = null;
+const gamesCache      = {};
+const rosterCache     = {};
+const scoringCache    = {};
+const sortState       = {};
+const dynamicPlayerData = {};
+const teamSalaryCache = {}; // teamId → {total, count, rosterSize}
+let bbcLinksCache = {};    // eventId → BBC article URL
+
+// ── TEAM VIEW STATE ───────────────────────────────────────────────────────────
+let currentView       = 'date';   // 'date' | 'team'
+let filteredTeamId    = null;
+let filteredTeamName  = null;
+const allWCTeams      = []; // populated by initApp; WC48 used as synchronous fallback
+
+const WC48 = [
+  {id:'624',   name:'Algeria',           abbr:'ALG', iso:'dz'},
+  {id:'202',   name:'Argentina',         abbr:'ARG', iso:'ar'},
+  {id:'628',   name:'Australia',         abbr:'AUS', iso:'au'},
+  {id:'474',   name:'Austria',           abbr:'AUT', iso:'at'},
+  {id:'459',   name:'Belgium',           abbr:'BEL', iso:'be'},
+  {id:'452',   name:'Bosnia-Herz.',      abbr:'BIH', iso:'ba'},
+  {id:'205',   name:'Brazil',            abbr:'BRA', iso:'br'},
+  {id:'206',   name:'Canada',            abbr:'CAN', iso:'ca'},
+  {id:'2597',  name:'Cape Verde',        abbr:'CPV', iso:'cv'},
+  {id:'208',   name:'Colombia',          abbr:'COL', iso:'co'},
+  {id:'2850',  name:'Congo DR',          abbr:'COD', iso:'cd'},
+  {id:'477',   name:'Croatia',           abbr:'CRO', iso:'hr'},
+  {id:'11678', name:'Curaçao',           abbr:'CUW', iso:'cw'},
+  {id:'450',   name:'Czechia',           abbr:'CZE', iso:'cz'},
+  {id:'209',   name:'Ecuador',           abbr:'ECU', iso:'ec'},
+  {id:'2620',  name:'Egypt',             abbr:'EGY', iso:'eg'},
+  {id:'448',   name:'England',           abbr:'ENG', iso:'gb-eng'},
+  {id:'478',   name:'France',            abbr:'FRA', iso:'fr'},
+  {id:'481',   name:'Germany',           abbr:'GER', iso:'de'},
+  {id:'4469',  name:'Ghana',             abbr:'GHA', iso:'gh'},
+  {id:'2654',  name:'Haiti',             abbr:'HAI', iso:'ht'},
+  {id:'469',   name:'Iran',              abbr:'IRN', iso:'ir'},
+  {id:'4375',  name:'Iraq',              abbr:'IRQ', iso:'iq'},
+  {id:'4789',  name:'Ivory Coast',       abbr:'CIV', iso:'ci'},
+  {id:'627',   name:'Japan',             abbr:'JPN', iso:'jp'},
+  {id:'2917',  name:'Jordan',            abbr:'JOR', iso:'jo'},
+  {id:'203',   name:'Mexico',            abbr:'MEX', iso:'mx'},
+  {id:'2869',  name:'Morocco',           abbr:'MAR', iso:'ma'},
+  {id:'449',   name:'Netherlands',       abbr:'NED', iso:'nl'},
+  {id:'2666',  name:'New Zealand',       abbr:'NZL', iso:'nz'},
+  {id:'464',   name:'Norway',            abbr:'NOR', iso:'no'},
+  {id:'2659',  name:'Panama',            abbr:'PAN', iso:'pa'},
+  {id:'210',   name:'Paraguay',          abbr:'PAR', iso:'py'},
+  {id:'482',   name:'Portugal',          abbr:'POR', iso:'pt'},
+  {id:'4398',  name:'Qatar',             abbr:'QAT', iso:'qa'},
+  {id:'655',   name:'Saudi Arabia',      abbr:'KSA', iso:'sa'},
+  {id:'580',   name:'Scotland',          abbr:'SCO', iso:'gb-sct'},
+  {id:'654',   name:'Senegal',           abbr:'SEN', iso:'sn'},
+  {id:'467',   name:'South Africa',      abbr:'RSA', iso:'za'},
+  {id:'451',   name:'South Korea',       abbr:'KOR', iso:'kr'},
+  {id:'164',   name:'Spain',             abbr:'ESP', iso:'es'},
+  {id:'466',   name:'Sweden',            abbr:'SWE', iso:'se'},
+  {id:'475',   name:'Switzerland',       abbr:'SUI', iso:'ch'},
+  {id:'659',   name:'Tunisia',           abbr:'TUN', iso:'tn'},
+  {id:'465',   name:'Türkiye',           abbr:'TUR', iso:'tr'},
+  {id:'660',   name:'United States',     abbr:'USA', iso:'us'},
+  {id:'212',   name:'Uruguay',           abbr:'URU', iso:'uy'},
+  {id:'2570',  name:'Uzbekistan',        abbr:'UZB', iso:'uz'},
+];
+let filteredCity      = null;
+let allGamesCache     = null; // full tournament schedule, loaded once for city view
+
+const HOST_CITIES = [
+  {name:'Atlanta',           flag:'🇺🇸', venue:'Mercedes-Benz Stadium'},
+  {name:'Boston',            flag:'🇺🇸', venue:'Gillette Stadium'},
+  {name:'Dallas',            flag:'🇺🇸', venue:'AT&T Stadium'},
+  {name:'Houston',           flag:'🇺🇸', venue:'NRG Stadium'},
+  {name:'Kansas City',       flag:'🇺🇸', venue:'Arrowhead Stadium'},
+  {name:'Los Angeles',       flag:'🇺🇸', venue:'SoFi Stadium'},
+  {name:'Miami',             flag:'🇺🇸', venue:'Hard Rock Stadium'},
+  {name:'New York',          flag:'🇺🇸', venue:'MetLife Stadium'},
+  {name:'Philadelphia',      flag:'🇺🇸', venue:'Lincoln Financial Field'},
+  {name:'San Francisco',     flag:'🇺🇸', venue:"Levi's Stadium"},
+  {name:'Seattle',           flag:'🇺🇸', venue:'Lumen Field'},
+  {name:'Guadalajara',       flag:'🇲🇽', venue:'Estadio Akron'},
+  {name:'Mexico City',       flag:'🇲🇽', venue:'Estadio Azteca'},
+  {name:'Monterrey',         flag:'🇲🇽', venue:'Estadio BBVA'},
+  {name:'Toronto',           flag:'🇨🇦', venue:'BMO Field'},
+  {name:'Vancouver',         flag:'🇨🇦', venue:'BC Place'},
+];
+const teamScheduleCache = {};
+
+// ── WIKIPEDIA SQUAD DATA (systemic club fallback for all 48 nations) ──────────
+// ── WIKIPEDIA SQUAD DATA (all 1,247 players, pre-parsed at build time) ──────────
+const WIKI_CLUBS = {
+"matej kovar": "PSV Eindhoven",
+"david zima": "Slavia Prague",
+"tomas holes": "Slavia Prague",
+"robin hranac": "TSG Hoffenheim",
+"vladimir coufal": "TSG Hoffenheim",
+"stepan chaloupek": "Slavia Prague",
+"ladislav krejci": "Wolverhampton Wanderers",
+"vladimir darida": "Hradec Králové",
+"adam hlozek": "TSG Hoffenheim",
+"patrik schick": "Bayer Leverkusen",
+"jan kuchta": "Sparta Prague",
+"lukas cerv": "Viktoria Plzeň",
+"mojmir chytil": "Slavia Prague",
+"david jurasek": "Slavia Prague",
+"pavel sulc": "Lyon",
+"jindrich stanek": "Slavia Prague",
+"lukas provod": "Slavia Prague",
+"michal sadilek": "Slavia Prague",
+"tomas chory": "Slavia Prague",
+"jaroslav zeleny": "Sparta Prague",
+"david doudera": "Slavia Prague",
+"tomas soucek": "West Ham United",
+"lukas hornicek": "Braga",
+"alexandr sojka": "Viktoria Plzeň",
+"hugo sochurek": "Sparta Prague",
+"denis visinsky": "Viktoria Plzeň",
+"raul rangel": "Guadalajara",
+"jorge sanchez": "PAOK",
+"cesar montes": "Lokomotiv Moscow",
+"edson alvarez": "Fenerbahçe",
+"johan vasquez": "Genoa",
+"erik lira": "Cruz Azul",
+"luis romo": "Guadalajara",
+"alvaro fidalgo": "Real Betis",
+"raul jimenez": "Fulham",
+"alexis vega": "Toluca",
+"santiago gimenez": "Milan",
+"carlos acevedo": "Santos Laguna",
+"guillermo ochoa": "AEL Limassol",
+"armando gonzalez": "Guadalajara",
+"israel reyes": "América",
+"julian quinones": "Al-Qadsiah",
+"orbelin pineda": "AEK Athens",
+"obed vargas": "Atlético Madrid",
+"gilberto mora": "Tijuana",
+"mateo chavez": "AZ",
+"cesar huerta": "Anderlecht",
+"guillermo martinez": "Pumas UNAM",
+"jesus gallardo": "Toluca",
+"luis chavez": "Dynamo Moscow",
+"roberto alvarado": "Guadalajara",
+"brian gutierrez": "Guadalajara",
+"ronwen williams": "Mamelodi Sundowns",
+"thabang matuludi": "Polokwane City",
+"khulumani ndamane": "Mamelodi Sundowns",
+"teboho mokoena": "Mamelodi Sundowns",
+"thalente mbatha": "Orlando Pirates",
+"aubrey modiba": "Mamelodi Sundowns",
+"oswin appollis": "Orlando Pirates",
+"tshepang moremi": "Orlando Pirates",
+"lyle foster": "Burnley",
+"relebohile mofokeng": "Orlando Pirates",
+"themba zwane": "Mamelodi Sundowns",
+"thapelo maseko": "AEL Limassol",
+"sphephelo sithole": "Tondela",
+"mbekezeli mbokazi": "Chicago Fire FC",
+"iqraam rayners": "Mamelodi Sundowns",
+"sipho chaine": "Orlando Pirates",
+"evidence makgopa": "Orlando Pirates",
+"samukele kabini": "Molde",
+"nkosinathi sibisi": "Orlando Pirates",
+"khuliso mudau": "Mamelodi Sundowns",
+"ime okon": "Hannover 96",
+"ricardo goss": "Siwelele",
+"jayden adams": "Mamelodi Sundowns",
+"olwethu makhanya": "Philadelphia Union",
+"kamogelo sebelebele": "Orlando Pirates",
+"bradley cross": "Kaizer Chiefs",
+"kim seunggyu": "FC Tokyo",
+"lee hanbeom": "Midtjylland",
+"lee gihyuk": "Gangwon FC",
+"kim minjae": "Bayern Munich",
+"kim taehyeon": "Kashima Antlers",
+"hwang inbeom": "Feyenoord",
+"son heungmin": "Los Angeles FC",
+"paik seungho": "Birmingham City",
+"cho guesung": "Midtjylland",
+"lee jaesung": "Mainz 05",
+"hwang heechan": "Wolverhampton Wanderers",
+"song bumkeun": "Jeonbuk Hyundai Motors",
+"lee taeseok": "Austria Wien",
+"cho wije": "Jeonbuk Hyundai Motors",
+"kim moonhwan": "Daejeon Hana Citizen",
+"park jinseob": "Zhejiang",
+"bae junho": "Stoke City",
+"oh hyeongyu": "Beşiktaş",
+"lee kangin": "Paris Saint-Germain",
+"yang hyunjun": "Celtic",
+"jo hyeonwoo": "Ulsan HD",
+"seol youngwoo": "Red Star Belgrade",
+"jens castrop": "Borussia Mönchengladbach",
+"kim jingyu": "Jeonbuk Hyundai Motors",
+"eom jisung": "Swansea City",
+"lee donggyeong": "Ulsan HD",
+"nikola vasilj": "FC St. Pauli",
+"nihad mujakic": "Gaziantep",
+"dennis hadzikadunic": "Sampdoria",
+"tarik muharemovic": "Sassuolo",
+"sead kolasinac": "Atalanta",
+"benjamin tahirovic": "Brøndby",
+"amar dedic": "Benfica",
+"armin gigovic": "Young Boys",
+"samed bazdar": "Jagiellonia Białystok",
+"ermedin demirovic": "VfB Stuttgart",
+"edin dzeko": "Schalke 04",
+"mladen jurkas": "Borac Banja Luka",
+"ivan basic": "Astana",
+"ivan sunjic": "Pafos",
+"amar memic": "Viktoria Plzeň",
+"amir hadziahmetovic": "Hull City",
+"dzenis burnic": "Karlsruher SC",
+"nikola katic": "Schalke 04",
+"kerim alajbegovic": "Red Bull Salzburg",
+"esmir bajraktarevic": "PSV Eindhoven",
+"stjepan radeljic": "Rijeka",
+"martin zlomislic": "Rijeka",
+"haris tabakovic": "Borussia Mönchengladbach",
+"arjan malic": "Sturm Graz",
+"jovo lukic": "Universitatea Cluj",
+"ermin mahmic": "Slovan Liberec",
+"dayne st clair": "Inter Miami CF",
+"alistair johnston": "Celtic",
+"alfie jones": "Middlesbrough",
+"luc de fougerolles": "Dender",
+"joel waterman": "Chicago Fire FC",
+"mathieu choiniere": "Los Angeles FC",
+"stephen eustaquio": "Los Angeles FC",
+"ismael kone": "Sassuolo",
+"cyle larin": "Southampton",
+"jonathan david": "Juventus",
+"liam millar": "Hull City",
+"tani oluwaseyi": "Villarreal",
+"derek cornelius": "Rangers",
+"jacob shaffelburg": "Los Angeles FC",
+"moise bombito": "Nice",
+"maxime crepeau": "Orlando City SC",
+"tajon buchanan": "Villarreal",
+"owen goodman": "Barnsley",
+"alphonso davies": "Bayern Munich",
+"ali ahmed": "Norwich City",
+"jonathan osorio": "Toronto FC",
+"richie laryea": "Toronto FC",
+"niko sigur": "Hajduk Split",
+"promise david": "Union Saint-Gilloise",
+"nathan saliba": "Anderlecht",
+"jayden nelson": "Austin FC",
+"mahmud abunada": "Al-Rayyan",
+"pedro miguel": "Al-Sadd",
+"lucas mendes": "Al-Wakrah",
+"issa laye": "Al-Arabi",
+"jassem gaber": "Al-Rayyan",
+"abdulaziz hatem": "Al-Rayyan",
+"ahmed alaaeldin": "Al-Rayyan",
+"edmilson junior": "Al-Duhail",
+"mohammed muntari": "Al-Gharafa",
+"hassan alhaydos": "Al-Sadd",
+"akram afif": "Al-Sadd",
+"karim boudiaf": "Al-Duhail",
+"ayoub aloui": "Al-Gharafa",
+"homam ahmed": "Cultural Leonesa",
+"yusuf abdurisag": "Al-Wakrah",
+"boualem khoukhi": "Al-Sadd",
+"ahmed alganehi": "Al-Gharafa",
+"sultan albrake": "Al-Duhail",
+"almoez ali": "Al-Duhail",
+"ahmed fathy": "Al-Arabi",
+"salah zakaria": "Al-Duhail",
+"meshaal barsham": "Al-Sadd",
+"assim madibo": "Al-Wakrah",
+"tahsin jamshid": "Al-Duhail",
+"alhashmi alhussain": "Al-Arabi",
+"mohamed manai": "Al-Shamal",
+"gregor kobel": "Borussia Dortmund",
+"miro muheim": "Hamburger SV",
+"silvan widmer": "Mainz 05",
+"nico elvedi": "Borussia Mönchengladbach",
+"manuel akanji": "Inter Milan",
+"denis zakaria": "Monaco",
+"breel embolo": "Rennes",
+"remo freuler": "Bologna",
+"johan manzambi": "SC Freiburg",
+"granit xhaka": "Sunderland",
+"dan ndoye": "Nottingham Forest",
+"yvon mvogo": "Lorient",
+"ricardo rodriguez": "Real Betis",
+"ardon jashari": "Milan",
+"djibril sow": "Sevilla",
+"christian fassnacht": "Young Boys",
+"ruben vargas": "Sevilla",
+"eray comert": "Valencia",
+"noah okafor": "Leeds United",
+"michel aebischer": "Pisa",
+"marvin keller": "Young Boys",
+"fabian rieder": "FC Augsburg",
+"zeki amdouni": "Burnley",
+"aurele amenda": "Eintracht Frankfurt",
+"luca jaquez": "VfB Stuttgart",
+"cedric itten": "Fortuna Düsseldorf",
+"alisson": "Liverpool",
+"ederson silva": "Atalanta",
+"gabriel magalhaes": "Arsenal",
+"marquinhos": "Paris Saint-Germain",
+"casemiro": "Manchester United",
+"alex sandro": "Flamengo",
+"vinicius junior": "Real Madrid",
+"bruno guimaraes": "Newcastle United",
+"matheus cunha": "Manchester United",
+"neymar": "Santos",
+"raphinha": "Barcelona",
+"weverton": "Grêmio",
+"danilo luiz": "Flamengo",
+"bremer": "Juventus",
+"leo pereira": "Flamengo",
+"douglas santos": "Zenit Saint Petersburg",
+"fabinho": "Al-Ittihad",
+"danilo santos": "Botafogo",
+"endrick": "Lyon",
+"lucas paqueta": "Flamengo",
+"luiz henrique": "Zenit Saint Petersburg",
+"gabriel martinelli": "Arsenal",
+"ederson moraes": "Fenerbahçe",
+"roger ibanez": "Al-Ahli",
+"igor thiago": "Brentford",
+"rayan": "Bournemouth",
+"johny placide": "Bastia",
+"carlens arcus": "Angers",
+"keeto thermoncy": "Young Boys",
+"ricardo ade": "LDU Quito",
+"hannes delcroix": "Lugano",
+"carl sainte": "El Paso Locomotive FC",
+"derrick etienne jr": "Toronto FC",
+"martin experience": "Nancy",
+"duckens nazon": "Esteghlal",
+"jeanricner bellegarde": "Wolverhampton Wanderers",
+"louicius deedson": "FC Dallas",
+"alexandre pierre": "Sochaux",
+"duke lacroix": "Colorado Springs Switchbacks FC",
+"garven metusala": "Colorado Springs Switchbacks FC",
+"ruben providence": "Almere City",
+"lenny joseph": "Ferencváros",
+"danley jean jacques": "Philadelphia Union",
+"wilson isidor": "Sunderland",
+"yassin fortune": "Vizela",
+"frantzdy pierrot": "Çaykur Rizespor",
+"josue casimir": "Auxerre",
+"jeankevin duverne": "Gent",
+"josue duverger": "Cosmos Koblenz",
+"wilguens paugain": "Zulte Waregem",
+"dominique simon": "Tatran Prešov",
+"woodensky pierre": "Violette",
+"yassine bounou": "Al-Hilal",
+"achraf hakimi": "Paris Saint-Germain",
+"noussair mazraoui": "Manchester United",
+"sofyan amrabat": "Real Betis",
+"marwane saadane": "Al-Fateh",
+"ayyoub bouaddi": "Lille",
+"chemsdine talbi": "Sunderland",
+"azzedine ounahi": "Girona",
+"soufiane rahimi": "Al Ain",
+"brahim diaz": "Real Madrid",
+"ismael saibari": "PSV Eindhoven",
+"munir mohamedi": "RS Berkane",
+"zakaria el ouahdi": "Genk",
+"issa diop": "Fulham",
+"samir el mourabet": "Strasbourg",
+"gessime yassine": "Strasbourg",
+"amine sbai": "Angers",
+"chadi riad": "Crystal Palace",
+"youssef belammari": "Al Ahly",
+"ayoub el kaabi": "Olympiacos",
+"ayoube amaimouni": "Eintracht Frankfurt",
+"ahmed reda tagnaouti": "AS FAR",
+"bilal el khannouss": "VfB Stuttgart",
+"neil el aynaoui": "Roma",
+"redouane halhal": "Mechelen",
+"anass salaheddine": "PSV Eindhoven",
+"angus gunn": "Nottingham Forest",
+"aaron hickey": "Brentford",
+"andy robertson": "Liverpool",
+"scott mctominay": "Napoli",
+"grant hanley": "Hibernian",
+"kieran tierney": "Celtic",
+"john mcginn": "Aston Villa",
+"tyler fletcher": "Manchester United",
+"lyndon dykes": "Charlton Athletic",
+"che adams": "Torino",
+"ryan christie": "Bournemouth",
+"liam kelly": "Rangers",
+"jack hendry": "Al-Ettifaq",
+"ross stewart": "Southampton",
+"john souttar": "Rangers",
+"dominic hyam": "Wrexham",
+"ben gannondoak": "Bournemouth",
+"george hirst": "Ipswich Town",
+"lewis ferguson": "Bologna",
+"lawrence shankland": "Heart of Midlothian",
+"craig gordon": "Heart of Midlothian",
+"nathan patterson": "Everton",
+"kenny mclean": "Norwich City",
+"anthony ralston": "Celtic",
+"findlay curtis": "Kilmarnock",
+"scott mckenna": "Dinamo Zagreb",
+"mathew ryan": "Levante",
+"milos degenek": "APOEL",
+"alessandro circati": "Parma",
+"jacob italiano": "Grazer AK",
+"jordan bos": "Feyenoord",
+"jason geria": "Albirex Niigata",
+"mathew leckie": "Melbourne City",
+"connor metcalfe": "FC St. Pauli",
+"mohamed toure": "Norwich City",
+"ajdin hrustic": "Heracles Almelo",
+"awer mabil": "Castellón",
+"paul izzo": "Randers",
+"aiden oneill": "New York City FC",
+"cammy devlin": "Heart of Midlothian",
+"kai trewin": "New York City FC",
+"aziz behich": "Melbourne City",
+"nestory irankunda": "Watford",
+"patrick beach": "Melbourne City",
+"harry souttar": "Leicester City",
+"cristian volpato": "Sassuolo",
+"cameron burgess": "Swansea City",
+"jackson irvine": "FC St. Pauli",
+"nishan velupillay": "Melbourne Victory",
+"paul okonengstler": "Sydney FC",
+"lucas herrington": "Colorado Rapids",
+"tete yengi": "Machida Zelvia",
+"gatito fernandez": "Cerro Porteño",
+"gustavo velazquez": "Cerro Porteño",
+"omar alderete": "Sunderland",
+"juan jose caceres": "Dynamo Moscow",
+"fabian balbuena": "Grêmio",
+"junior alonso": "Atlético Mineiro",
+"ramon sosa": "Palmeiras",
+"diego gomez": "Brighton & Hove Albion",
+"antonio sanabria": "Cremonese",
+"miguel almiron": "Atlanta United FC",
+"mauricio": "Palmeiras",
+"orlando gill": "San Lorenzo",
+"jose canale": "Lanús",
+"andres cubas": "Vancouver Whitecaps FC",
+"gustavo gomez": "Palmeiras",
+"damian bobadilla": "São Paulo",
+"kaku": "Al Ain",
+"alex arce": "Independiente Rivadavia",
+"julio enciso": "Strasbourg",
+"braian ojeda": "Orlando City SC",
+"gabriel avalos": "Independiente",
+"gaston olveira": "Olimpia",
+"matias galarza": "Atlanta United FC",
+"gustavo caballero": "Portsmouth",
+"isidro pitta": "Red Bull Bragantino",
+"alexandro maidana": "Talleres",
+"mert gunok": "Fenerbahçe",
+"zeki celik": "Roma",
+"merih demiral": "Al-Ahli",
+"caglar soyuncu": "Fenerbahçe",
+"salih ozcan": "Borussia Dortmund",
+"orkun kokcu": "Beşiktaş",
+"kerem akturkoglu": "Fenerbahçe",
+"arda guler": "Real Madrid",
+"deniz gul": "Porto",
+"hakan calhanoglu": "Inter Milan",
+"kenan yildiz": "Juventus",
+"altay bayindir": "Manchester United",
+"eren elmali": "Galatasaray",
+"abdulkerim bardakci": "Galatasaray",
+"ozan kabak": "TSG Hoffenheim",
+"ismail yuksek": "Fenerbahçe",
+"irfan can kahveci": "Kasımpaşa",
+"mert muldur": "Fenerbahçe",
+"yunus akgun": "Galatasaray",
+"ferdi kadioglu": "Brighton & Hove Albion",
+"baris alper yilmaz": "Galatasaray",
+"kaan ayhan": "Galatasaray",
+"ugurcan cakir": "Galatasaray",
+"oguz aydin": "Fenerbahçe",
+"samet akaydin": "Çaykur Rizespor",
+"can uzun": "Eintracht Frankfurt",
+"matt turner": "New England Revolution",
+"sergino dest": "PSV Eindhoven",
+"chris richards": "Crystal Palace",
+"tyler adams": "Bournemouth",
+"antonee robinson": "Fulham",
+"auston trusty": "Celtic",
+"giovanni reyna": "Borussia Mönchengladbach",
+"weston mckennie": "Juventus",
+"ricardo pepi": "PSV Eindhoven",
+"christian pulisic": "Milan",
+"brenden aaronson": "Leeds United",
+"miles robinson": "FC Cincinnati",
+"tim ream": "Charlotte FC",
+"sebastian berhalter": "Vancouver Whitecaps FC",
+"cristian roldan": "Seattle Sounders FC",
+"alex freeman": "Villarreal",
+"malik tillman": "Bayer Leverkusen",
+"max arfsten": "Columbus Crew",
+"haji wright": "Coventry City",
+"folarin balogun": "Monaco",
+"timothy weah": "Marseille",
+"mark mckenzie": "Toulouse",
+"joe scally": "Borussia Mönchengladbach",
+"matt freese": "New York City FC",
+"chris brady": "Chicago Fire FC",
+"alejandro zendejas": "América",
+"eloy room": "Miami FC",
+"shurandy sambo": "Sparta Rotterdam",
+"jurien gaari": "Abha",
+"roshon van eijma": "RKC Waalwijk",
+"sherel floranus": "PEC Zwolle",
+"godfried roemeratoe": "RKC Waalwijk",
+"juninho bacuna": "Volendam",
+"livano comenencia": "Zürich",
+"jurgen locadia": "Miami FC",
+"leandro bacuna": "Iğdır",
+"jeremy antonisse": "Kifisia",
+"sontje hansen": "Middlesbrough",
+"tyrese noslin": "Telstar",
+"kenji gorre": "Maccabi Haifa",
+"arjany martha": "Rotherham United",
+"jearl margaritha": "Beveren",
+"brandley kuwas": "Volendam",
+"armando obispo": "PSV Eindhoven",
+"gervane kastaneer": "Terengganu",
+"joshua brenet": "Kayserispor",
+"tahith chong": "Sheffield United",
+"kevin felida": "Den Bosch",
+"riechedly bazoer": "Konyaspor",
+"deveron fonville": "NEC",
+"tyrick bodak": "Telstar",
+"trevor doornbusch": "VVV-Venlo",
+"hernan galindez": "Huracán",
+"felix torres": "Internacional",
+"piero hincapie": "Arsenal",
+"joel ordonez": "Club Brugge",
+"jordy alcivar": "Independiente del Valle",
+"willian pacho": "Paris Saint-Germain",
+"pervis estupinan": "Milan",
+"anthony valencia": "Antwerp",
+"john yeboah": "Venezia",
+"kendry paez": "River Plate",
+"kevin rodriguez": "Union Saint-Gilloise",
+"moises ramirez": "Kifisia",
+"enner valencia": "Pachuca",
+"alan minda": "Atlético Mineiro",
+"pedro vite": "Pumas UNAM",
+"jordy caicedo": "Huracán",
+"angelo preciado": "Atlético Mineiro",
+"denil castillo": "Midtjylland",
+"gonzalo plata": "Flamengo",
+"nilson angulo": "Sunderland",
+"alan franco": "Atlético Mineiro",
+"gonzalo valle": "LDU Quito",
+"moises caicedo": "Chelsea",
+"jeremy arevalo": "VfB Stuttgart",
+"jackson porozo": "Tijuana",
+"yaimar medina": "Genk",
+"manuel neuer": "Bayern Munich",
+"antonio rudiger": "Real Madrid",
+"waldemar anton": "Borussia Dortmund",
+"jonathan tah": "Bayern Munich",
+"aleksandar pavlovic": "Bayern Munich",
+"joshua kimmich": "Bayern Munich",
+"kai havertz": "Arsenal",
+"leon goretzka": "Bayern Munich",
+"jamie leweling": "VfB Stuttgart",
+"jamal musiala": "Bayern Munich",
+"nick woltemade": "Newcastle United",
+"oliver baumann": "TSG Hoffenheim",
+"pascal gro": "Brighton & Hove Albion",
+"maximilian beier": "Borussia Dortmund",
+"nico schlotterbeck": "Borussia Dortmund",
+"angelo stiller": "VfB Stuttgart",
+"florian wirtz": "Liverpool",
+"nathaniel brown": "Eintracht Frankfurt",
+"leroy sane": "Galatasaray",
+"nadiem amiri": "Mainz 05",
+"alexander nubel": "VfB Stuttgart",
+"david raum": "RB Leipzig",
+"felix nmecha": "Borussia Dortmund",
+"malick thiaw": "Newcastle United",
+"assan ouedraogo": "RB Leipzig",
+"deniz undav": "VfB Stuttgart",
+"yahia fofana": "Çaykur Rizespor",
+"ousmane diomande": "Sporting CP",
+"ghislain konan": "Gil Vicente",
+"jean michael seri": "Maribor",
+"wilfried singo": "Galatasaray",
+"seko fofana": "Porto",
+"odilon kossounou": "Atalanta",
+"franck kessie": "Al-Ahli",
+"angeyoan bonny": "Inter Milan",
+"simon adingra": "Monaco",
+"yan diomande": "RB Leipzig",
+"elye wahi": "Nice",
+"christopher operi": "İstanbul Başakşehir",
+"oumar diakite": "Cercle Brugge",
+"amad diallo": "Manchester United",
+"mohamed kone": "Charleroi",
+"guela doue": "Strasbourg",
+"ibrahim sangare": "Nottingham Forest",
+"nicolas pepe": "Villarreal",
+"emmanuel agbadou": "Beşiktaş",
+"evan ndicka": "Roma",
+"evann guessand": "Crystal Palace",
+"alban lafont": "Panathinaikos",
+"bazoumana toure": "TSG Hoffenheim",
+"parfait guiagon": "Charleroi",
+"christ inao oulai": "Trabzonspor",
+"zion suzuki": "Parma",
+"yukinari sugawara": "Werder Bremen",
+"shogo taniguchi": "Sint-Truiden",
+"ko itakura": "Ajax",
+"yuto nagatomo": "FC Tokyo",
+"shuto machino": "Borussia Mönchengladbach",
+"ao tanaka": "Leeds United",
+"takefusa kubo": "Real Sociedad",
+"keisuke goto": "Sint-Truiden",
+"ritsu doan": "Eintracht Frankfurt",
+"daizen maeda": "Celtic",
+"keisuke osako": "Sanfrecce Hiroshima",
+"keito nakamura": "Reims",
+"junya ito": "Genk",
+"daichi kamada": "Crystal Palace",
+"tsuyoshi watanabe": "Feyenoord",
+"yuito suzuki": "SC Freiburg",
+"ayase ueda": "Feyenoord",
+"koki ogawa": "NEC",
+"ayumu seko": "Le Havre",
+"hiroki ito": "Bayern Munich",
+"takehiro tomiyasu": "Ajax",
+"tomoki hayakawa": "Kashima Antlers",
+"kaishu sano": "Mainz 05",
+"junnosuke suzuki": "Copenhagen",
+"kento shiogai": "VfL Wolfsburg",
+"bart verbruggen": "Brighton & Hove Albion",
+"lutsharel geertruida": "Sunderland",
+"marten de roon": "Atalanta",
+"virgil van dijk": "Liverpool",
+"nathan ake": "Manchester City",
+"jan paul van hecke": "Brighton & Hove Albion",
+"justin kluivert": "Bournemouth",
+"ryan gravenberch": "Liverpool",
+"wout weghorst": "Ajax",
+"memphis depay": "Corinthians",
+"cody gakpo": "Liverpool",
+"mats wieffer": "Brighton & Hove Albion",
+"robin roefs": "Sunderland",
+"tijjani reijnders": "Manchester City",
+"micky van de ven": "Tottenham Hotspur",
+"guus til": "PSV Eindhoven",
+"noa lang": "Galatasaray",
+"donyell malen": "Roma",
+"brian brobbey": "Sunderland",
+"teun koopmeiners": "Juventus",
+"frenkie de jong": "Barcelona",
+"denzel dumfries": "Inter Milan",
+"mark flekken": "Bayer Leverkusen",
+"crysencio summerville": "West Ham United",
+"jorrel hato": "Chelsea",
+"quinten timber": "Marseille",
+"jacob widell zetterstrom": "Derby County",
+"gustaf lagerbielke": "Braga",
+"victor lindelof": "Aston Villa",
+"isak hien": "Atalanta",
+"gabriel gudmundsson": "Leeds United",
+"herman johansson": "FC Dallas",
+"lucas bergvall": "Tottenham Hotspur",
+"daniel svensson": "Borussia Dortmund",
+"alexander isak": "Liverpool",
+"benjamin nygren": "Celtic",
+"anthony elanga": "Newcastle United",
+"viktor johansson": "Stoke City",
+"ken sema": "Pafos",
+"hjalmar ekdal": "Burnley",
+"carl starfelt": "Celta Vigo",
+"jesper karlstrom": "Udinese",
+"viktor gyokeres": "Arsenal",
+"yasin ayari": "Brighton & Hove Albion",
+"mattias svanberg": "VfL Wolfsburg",
+"eric smith": "FC St. Pauli",
+"alexander bernhardsson": "Holstein Kiel",
+"besfort zeneli": "Union Saint-Gilloise",
+"kristoffer nordfeldt": "AIK",
+"elliot stroud": "Mjällby AIF",
+"gustaf nilsson": "Club Brugge",
+"taha ali": "Malmö FF",
+"mouhib chamakh": "Club Africain",
+"ali abdi": "Nice",
+"montassar talbi": "Lorient",
+"omar rekik": "Maribor",
+"adem arous": "Kasımpaşa",
+"dylan bronn": "Servette",
+"elias achouri": "Copenhagen",
+"elias saad": "Hannover 96",
+"hazem mastouri": "Dynamo Makhachkala",
+"hannibal mejbri": "Burnley",
+"ismael gharbi": "FC Augsburg",
+"mortadha ben ouanes": "Kasımpaşa",
+"rani khedira": "Union Berlin",
+"khalil ayari": "Paris Saint-Germain",
+"hadj mahmoud": "Lugano",
+"aymen dahmen": "CS Sfaxien",
+"ellyes skhiri": "Eintracht Frankfurt",
+"rayan elloumi": "Vancouver Whitecaps FC",
+"firas chaouat": "Club Africain",
+"yan valery": "Young Boys",
+"mohamed amine ben hamida": "Espérance de Tunis",
+"sabri ben hessen": "Étoile du Sahel",
+"moutaz neffati": "IFK Norrköping",
+"raed chikhaoui": "US Monastir",
+"anis ben slimane": "Norwich City",
+"sebastian tounekti": "Celtic",
+"thibaut courtois": "Real Madrid",
+"zeno debast": "Sporting CP",
+"arthur theate": "Eintracht Frankfurt",
+"brandon mechele": "Club Brugge",
+"maxim de cuyper": "Brighton & Hove Albion",
+"axel witsel": "Girona",
+"kevin de bruyne": "Napoli",
+"youri tielemans": "Aston Villa",
+"romelu lukaku": "Napoli",
+"leandro trossard": "Arsenal",
+"jeremy doku": "Manchester City",
+"senne lammens": "Manchester United",
+"mike penders": "Strasbourg",
+"dodi lukebakio": "Benfica",
+"thomas meunier": "Lille",
+"koni de winter": "Milan",
+"charles de ketelaere": "Atalanta",
+"joaquin seys": "Club Brugge",
+"diego moreira": "Strasbourg",
+"hans vanaken": "Club Brugge",
+"timothy castagne": "Fulham",
+"alexis saelemaekers": "Milan",
+"nicolas raskin": "Rangers",
+"amadou onana": "Aston Villa",
+"nathan ngoy": "Lille",
+"matias fernandezpardo": "Lille",
+"mohamed el shenawy": "Al Ahly",
+"yasser ibrahim": "Al Ahly",
+"mohamed hany": "Al Ahly",
+"hossam abdelmaguid": "Zamalek",
+"ramy rabia": "Al Ain",
+"mohamed abdelmonem": "Nice",
+"trezeguet": "Al Ahly",
+"emam ashour": "Al Ahly",
+"hamza abdelkarim": "Barcelona B",
+"mohamed salah": "Liverpool",
+"mostafa ziko": "Pyramids",
+"haissem hassan": "Oviedo",
+"ahmed fatouh": "Zamalek",
+"hamdy fathy": "Al-Wakrah",
+"karim hafez": "Pyramids",
+"el mahdy soliman": "Zamalek",
+"mohanad lasheen": "Pyramids",
+"nabil emad": "Al-Najma",
+"marwan attia": "Al Ahly",
+"ibrahim adel": "Nordsjælland",
+"mahmoud saber": "ZED",
+"omar marmoush": "Manchester City",
+"mostafa shobeir": "Al Ahly",
+"tarek alaa": "ZED",
+"zizo": "Al Ahly",
+"mohamed alaa": "El Gouna",
+"alireza beiranvand": "Tractor",
+"saleh hardani": "Esteghlal",
+"ehsan hajsafi": "Sepahan",
+"shojae khalilzadeh": "Tractor",
+"milad mohammadi": "Persepolis",
+"saeid ezatolahi": "Shabab Al Ahli",
+"alireza jahanbakhsh": "Dender",
+"mohammad mohebi": "Rostov",
+"mehdi taremi": "Olympiacos",
+"mehdi ghayedi": "Al Nasr",
+"ali alipour": "Persepolis",
+"payam niazmand": "Persepolis",
+"hossein kanaanizadegan": "Persepolis",
+"saman ghoddos": "Kalba",
+"rouzbeh cheshmi": "Esteghlal",
+"mehdi torabi": "Tractor",
+"aria yousefi": "Sepahan",
+"amirhossein hosseinzadeh": "Tractor",
+"ali nemati": "Foolad",
+"shahriyar moghanlou": "Kalba",
+"mohammad ghorbani": "Al Wahda",
+"hossein hosseini": "Sepahan",
+"ramin rezaeian": "Foolad",
+"dennis eckert": "Standard Liège",
+"danial eiri": "Malavan",
+"amirmohammad razzaghinia": "Esteghlal",
+"max crocombe": "Millwall",
+"tim payne": "Wellington Phoenix",
+"francis de vries": "Auckland FC",
+"tyler bindon": "Sheffield United",
+"michael boxall": "Minnesota United FC",
+"joe bell": "Viking",
+"matthew garbett": "Peterborough United",
+"marko stamenic": "Swansea City",
+"chris wood": "Nottingham Forest",
+"sarpreet singh": "Wellington Phoenix",
+"elijah just": "Motherwell",
+"alex paulsen": "Lechia Gdańsk",
+"liberato cacace": "Wrexham",
+"alex rufer": "Wellington Phoenix",
+"nando pijnaker": "Auckland FC",
+"finn surman": "Portland Timbers",
+"kosta barbarouses": "Western Sydney Wanderers",
+"ben waine": "Port Vale",
+"ben old": "Saint-Étienne",
+"callum mccowatt": "Silkeborg",
+"jesse randall": "Auckland FC",
+"michael woud": "Auckland FC",
+"ryan thomas": "PEC Zwolle",
+"callan elliot": "Auckland FC",
+"lachlan bayliss": "Newcastle Jets",
+"tommy smith": "Braintree Town",
+"vozinha": "Chaves",
+"stopira": "Torreense",
+"diney": "Al Bataeh",
+"roberto lopes": "Shamrock Rovers",
+"logan costa": "Villarreal",
+"kevin pina": "Krasnodar",
+"jovane cabral": "Estrela Amadora",
+"joao paulo": "FCSB",
+"gilson benchimol": "Akron Tolyatti",
+"jamiro monteiro": "PEC Zwolle",
+"garry rodrigues": "Apollon Limassol",
+"marcio rosa": "Montana",
+"sidny lopes cabral": "Benfica",
+"deroy duarte": "Ludogorets Razgrad",
+"laros duarte": "Puskás Akadémia",
+"yannick semedo": "Farense",
+"willy semedo": "Omonia",
+"telmo arcanjo": "Vitória de Guimarães",
+"dailon livramento": "Casa Pia",
+"ryan mendes": "Iğdır",
+"nuno da costa": "İstanbul Başakşehir",
+"steven moreira": "Columbus Crew",
+"cj dos santos": "San Diego FC",
+"wagner pina": "Trabzonspor",
+"kelvin pires": "SJK",
+"helio varela": "Maccabi Tel Aviv",
+"nawaf alaqidi": "Al-Nassr",
+"ali majrashi": "Al-Ahli",
+"ali lajami": "Al-Hilal",
+"abdulelah alamri": "Al-Nassr",
+"hassan altambakti": "Al-Hilal",
+"nasser aldawsari": "Al-Hilal",
+"musab aljuwayr": "Al-Qadsiah",
+"ayman yahya": "Al-Nassr",
+"firas alburaikan": "Al-Ahli",
+"salem aldawsari": "Al-Hilal",
+"saleh alshehri": "Al-Ittihad",
+"saud abdulhamid": "Lens",
+"nawaf boushal": "Al-Nassr",
+"hassan kadesh": "Al-Ittihad",
+"abdullah alkhaibari": "Al-Nassr",
+"ziyad aljohani": "Al-Ahli",
+"khalid alghannam": "Al-Ettifaq",
+"alaa alhejji": "Neom",
+"abdullah alhamdan": "Al-Nassr",
+"sultan mandash": "Al-Hilal",
+"mohammed alowais": "Al-Ula",
+"ahmed alkassar": "Al-Qadsiah",
+"mohamed kanno": "Al-Hilal",
+"moteb alharbi": "Al-Hilal",
+"jehad thakri": "Al-Qadsiah",
+"mohammed abu alshamat": "Al-Qadsiah",
+"david raya": "Arsenal",
+"marc pubill": "Atlético Madrid",
+"alex grimaldo": "Bayer Leverkusen",
+"eric garcia": "Barcelona",
+"marcos llorente": "Atlético Madrid",
+"mikel merino": "Arsenal",
+"ferran torres": "Barcelona",
+"fabian ruiz": "Paris Saint-Germain",
+"gavi": "Barcelona",
+"dani olmo": "Barcelona",
+"yeremy pino": "Crystal Palace",
+"pedro porro": "Tottenham Hotspur",
+"joan garcia": "Barcelona",
+"aymeric laporte": "Athletic Bilbao",
+"alex baena": "Atlético Madrid",
+"rodri": "Manchester City",
+"nico williams": "Athletic Bilbao",
+"martin zubimendi": "Arsenal",
+"lamine yamal": "Barcelona",
+"pedri": "Barcelona",
+"mikel oyarzabal": "Real Sociedad",
+"pau cubarsi": "Barcelona",
+"unai simon": "Athletic Bilbao",
+"marc cucurella": "Chelsea",
+"victor munoz": "Osasuna",
+"borja iglesias": "Celta Vigo",
+"sergio rochet": "Internacional",
+"jose maria gimenez": "Atlético Madrid",
+"sebastian caceres": "América",
+"ronald araujo": "Barcelona",
+"manuel ugarte": "Manchester United",
+"rodrigo bentancur": "Tottenham Hotspur",
+"nicolas de la cruz": "Flamengo",
+"federico valverde": "Real Madrid",
+"darwin nunez": "Al-Hilal",
+"giorgian de arrascaeta": "Flamengo",
+"facundo pellistri": "Panathinaikos",
+"santiago mele": "Monterrey",
+"guillermo varela": "Flamengo",
+"agustin canobbio": "Fluminense",
+"emiliano martinez": "Aston Villa",
+"mathias olivera": "Napoli",
+"matias vina": "River Plate",
+"brian rodriguez": "América",
+"rodrigo aguirre": "Tigres UANL",
+"maximiliano araujo": "Sporting CP",
+"federico vinas": "Oviedo",
+"joaquin piquerez": "Palmeiras",
+"fernando muslera": "Estudiantes",
+"santiago bueno": "Wolverhampton Wanderers",
+"juan manuel sanabria": "Real Salt Lake",
+"rodrigo zalazar": "Braga",
+"brice samba": "Rennes",
+"malo gusto": "Chelsea",
+"lucas digne": "Aston Villa",
+"dayot upamecano": "Bayern Munich",
+"jules kounde": "Barcelona",
+"manu kone": "Roma",
+"ousmane dembele": "Paris Saint-Germain",
+"aurelien tchouameni": "Real Madrid",
+"marcus thuram": "Inter Milan",
+"kylian mbappe": "Real Madrid",
+"michael olise": "Bayern Munich",
+"bradley barcola": "Paris Saint-Germain",
+"ngolo kante": "Fenerbahçe",
+"adrien rabiot": "Milan",
+"ibrahima konate": "Liverpool",
+"mike maignan": "Milan",
+"william saliba": "Arsenal",
+"warren zaireemery": "Paris Saint-Germain",
+"theo hernandez": "Al-Hilal",
+"desire doue": "Paris Saint-Germain",
+"lucas hernandez": "Paris Saint-Germain",
+"jeanphilippe mateta": "Crystal Palace",
+"robin risser": "Lens",
+"rayan cherki": "Manchester City",
+"maghnes akliouche": "Monaco",
+"maxence lacroix": "Crystal Palace",
+"fahad talib": "Al-Talaba",
+"rebin sulaka": "Port",
+"hussein ali": "Pogoń Szczecin",
+"zaid tahseen": "Pakhtakor",
+"akam hashim": "Al-Zawraa",
+"manaf younis": "Al-Shorta",
+"youssef amyn": "AEK Larnaca",
+"ibrahim bayesh": "Al Dhafra",
+"ali alhamadi": "Luton Town",
+"mohanad ali": "Dibba",
+"ahmed qasem": "Nashville SC",
+"jalal hassan": "Al-Zawraa",
+"ali yousif": "Al-Talaba",
+"zidane iqbal": "Utrecht",
+"ahmed maknzi": "Al-Karma",
+"amir alammari": "Cracovia",
+"ali jasim": "Al-Najma",
+"aymen hussein": "Al-Karma",
+"kevin yakob": "AGF",
+"aimar sher": "Sarpsborg 08",
+"marko farji": "Venezia",
+"ahmed basil": "Al-Shorta",
+"merchas doski": "Viktoria Plzeň",
+"zaid ismail": "Al-Talaba",
+"mustafa saadoon": "Al-Shorta",
+"frans putros": "Persib",
+"rjan nyland": "Sevilla",
+"morten thorsby": "Cremonese",
+"kristoffer ajer": "Brentford",
+"leo stigard": "Genoa",
+"david mller wolfe": "Wolverhampton Wanderers",
+"patrick berg": "Bodø/Glimt",
+"alexander srloth": "Atlético Madrid",
+"sander berge": "Fulham",
+"erling haaland": "Manchester City",
+"martin degaard": "Arsenal",
+"jrgen strand larsen": "Crystal Palace",
+"sander tangvik": "Hamburger SV",
+"egil selvik": "Watford",
+"fredrik aursnes": "Benfica",
+"fredrik andre bjrkan": "Bodø/Glimt",
+"marcus holmgren pedersen": "Torino",
+"torbjrn heggem": "Bologna",
+"kristian thorstvedt": "Sassuolo",
+"thelo aasgaard": "Rangers",
+"antonio nusa": "RB Leipzig",
+"andreas schjelderup": "Benfica",
+"oscar bobb": "Fulham",
+"jens petter hauge": "Bodø/Glimt",
+"sondre langas": "Derby County",
+"henrik falchener": "Viking",
+"julian ryerson": "Borussia Dortmund",
+"yehvann diouf": "Nice",
+"mamadou sarr": "Chelsea",
+"kalidou koulibaly": "Al-Hilal",
+"abdoulaye seck": "Maccabi Haifa",
+"idrissa gueye": "Everton",
+"pathe ciss": "Rayo Vallecano",
+"assane diao": "Como",
+"lamine camara": "Monaco",
+"bamba dieng": "Lorient",
+"sadio mane": "Al-Nassr",
+"nicolas jackson": "Bayern Munich",
+"cherif ndiaye": "Samsunspor",
+"iliman ndiaye": "Everton",
+"ismail jakobs": "Galatasaray",
+"krepin diatta": "Monaco",
+"edouard mendy": "Al-Ahli",
+"pape matar sarr": "Tottenham Hotspur",
+"ismaila sarr": "Crystal Palace",
+"moussa niakhate": "Lyon",
+"ibrahim mbaye": "Paris Saint-Germain",
+"habib diarra": "Sunderland",
+"bara sapoko ndiaye": "Bayern Munich",
+"mory diaw": "Le Havre",
+"antoine mendy": "Nice",
+"el hadji malick diouf": "West Ham United",
+"pape gueye": "Villarreal",
+"melvin mastil": "Stade Nyonnais",
+"aissa mandi": "Lille",
+"achref abada": "USM Alger",
+"mohamed amine tougai": "Espérance de Tunis",
+"zineddine belaid": "JS Kabylie",
+"ramiz zerrouki": "Twente",
+"riyad mahrez": "Al-Ahli",
+"houssem aouar": "Al-Ittihad",
+"amine gouiri": "Marseille",
+"fares chaibi": "Eintracht Frankfurt",
+"anis hadj moussa": "Feyenoord",
+"nadhir benbouali": "Győri ETO",
+"jaouen hadjam": "Young Boys",
+"hicham boudaoui": "Nice",
+"rayan aitnouri": "Manchester City",
+"oussama benbot": "USM Alger",
+"rafik belghali": "Hellas Verona",
+"mohamed amoura": "VfL Wolfsburg",
+"nabil bentaleb": "Lille",
+"adil boulbina": "Al-Duhail",
+"ramy bensebaini": "Borussia Dortmund",
+"ibrahim maza": "Bayer Leverkusen",
+"luca zidane": "Granada",
+"yacine titraoui": "Charleroi",
+"fares ghedjemis": "Frosinone",
+"samir chergui": "Paris FC",
+"juan musso": "Atlético Madrid",
+"marcos senesi": "Bournemouth",
+"nicolas tagliafico": "Lyon",
+"gonzalo montiel": "River Plate",
+"leandro paredes": "Boca Juniors",
+"lisandro martinez": "Manchester United",
+"rodrigo de paul": "Inter Miami CF",
+"valentin barco": "Strasbourg",
+"julian alvarez": "Atlético Madrid",
+"lionel messi": "Inter Miami CF",
+"giovani lo celso": "Real Betis",
+"geronimo rulli": "Marseille",
+"cristian romero": "Tottenham Hotspur",
+"exequiel palacios": "Bayer Leverkusen",
+"nicolas gonzalez": "Atlético Madrid",
+"thiago almada": "Atlético Madrid",
+"giuliano simeone": "Atlético Madrid",
+"nico paz": "Como",
+"nicolas otamendi": "Benfica",
+"alexis mac allister": "Liverpool",
+"jose manuel lopez": "Palmeiras",
+"lautaro martinez": "Inter Milan",
+"enzo fernandez": "Chelsea",
+"facundo medina": "Marseille",
+"nahuel molina": "Atlético Madrid",
+"alexander schlager": "Red Bull Salzburg",
+"david affengruber": "Elche",
+"kevin danso": "Tottenham Hotspur",
+"xaver schlager": "RB Leipzig",
+"stefan posch": "Mainz 05",
+"nicolas seiwald": "RB Leipzig",
+"marko arnautovic": "Red Star Belgrade",
+"david alaba": "Real Madrid",
+"marcel sabitzer": "Borussia Dortmund",
+"florian grillitsch": "Braga",
+"michael gregoritsch": "FC Augsburg",
+"florian wiegele": "Viktoria Plzeň",
+"patrick pentz": "Brøndby",
+"sasa kalajdzic": "LASK",
+"philipp lienhart": "SC Freiburg",
+"phillipp mwene": "Mainz 05",
+"carney chukwuemeka": "Borussia Dortmund",
+"romano schmid": "Werder Bremen",
+"dejan ljubicic": "Schalke 04",
+"konrad laimer": "Bayern Munich",
+"patrick wimmer": "VfL Wolfsburg",
+"alexander prass": "TSG Hoffenheim",
+"marco friedl": "Werder Bremen",
+"paul wanner": "PSV Eindhoven",
+"michael svoboda": "Venezia",
+"alessandro schopf": "Wolfsberger AC",
+"yazeed abulaila": "Al-Hussein",
+"mohammad abu hashish": "Al-Karma",
+"abdallah nasib": "Al-Zawraa",
+"husam abu dahab": "Al-Faisaly",
+"yazan alarab": "FC Seoul",
+"amer jamous": "Al-Zawraa",
+"mohammad abu zrayq": "Raja Casablanca",
+"noor alrawabdeh": "Selangor",
+"ali olwan": "Al-Sailiya",
+"musa altaamari": "Rennes",
+"odeh alfakhouri": "Pyramids",
+"nour bani attiah": "Al-Faisaly",
+"mahmoud almardi": "Al-Hussein",
+"rajaei ayed": "Al-Hussein",
+"ibrahim sadeh": "Al-Karma",
+"mo abualnadi": "Selangor",
+"salim obaid": "Al-Hussein",
+"mohammad taha": "Al-Hussein",
+"saed alrosan": "Al-Hussein",
+"mohannad abu taha": "Al-Quwa Al-Jawiya",
+"nizar alrashdan": "Qatar SC",
+"abdallah alfakhouri": "Al-Wehdat",
+"ihsan haddad": "Al-Hussein",
+"ali azaizeh": "Al-Shabab",
+"mohammad aldawoud": "Al-Wehdat",
+"anas badawi": "Al-Faisaly",
+"david ospina": "Atlético Nacional",
+"daniel munoz": "Crystal Palace",
+"jhon lucumi": "Bologna",
+"santiago arias": "Independiente",
+"kevin castano": "River Plate",
+"richard rios": "Benfica",
+"luis diaz": "Bayern Munich",
+"jorge carrascal": "Flamengo",
+"jhon cordoba": "Krasnodar",
+"james rodriguez": "Minnesota United FC",
+"jhon arias": "Palmeiras",
+"camilo vargas": "Atlas",
+"yerry mina": "Cagliari",
+"gustavo puerta": "Racing Santander",
+"juan portilla": "Athletico Paranaense",
+"jefferson lerma": "Crystal Palace",
+"johan mojica": "Mallorca",
+"willer ditta": "Cruz Azul",
+"cucho hernandez": "Real Betis",
+"juan fernando quintero": "River Plate",
+"jaminton campaz": "Rosario Central",
+"deiver machado": "Nantes",
+"davinson sanchez": "Galatasaray",
+"alvaro montero": "Vélez Sarsfield",
+"luis suarez": "Sporting CP",
+"andres gomez": "Vasco da Gama",
+"lionel mpasi": "Le Havre",
+"aaron wanbissaka": "West Ham United",
+"steve kapuadi": "Widzew Łódź",
+"axel tuanzebe": "Burnley",
+"dylan batubinsika": "AEL",
+"ngalayel mukau": "Lille",
+"nathanael mbuku": "Montpellier",
+"samuel moutoussamy": "Atromitos",
+"brian cipenga": "Castellón",
+"theo bongonda": "Spartak Moscow",
+"gael kakuta": "AEL",
+"joris kayembe": "Genk",
+"meschak elia": "Alanyaspor",
+"noah sadiki": "Sunderland",
+"aaron tshibola": "Kilmarnock",
+"timothy fayulu": "Noah",
+"cedric bakambu": "Real Betis",
+"charles pickel": "Espanyol",
+"fiston mayele": "Pyramids",
+"yoane wissa": "Newcastle United",
+"matthieu epolo": "Standard Liège",
+"chancel mbemba": "Lille",
+"simon banza": "Al Jazira",
+"gedeon kalulu": "Aris Limassol",
+"edo kayembe": "Watford",
+"arthur masuaku": "Lens",
+"diogo costa": "Porto",
+"nelson semedo": "Fenerbahçe",
+"ruben dias": "Manchester City",
+"tomas araujo": "Benfica",
+"diogo dalot": "Manchester United",
+"matheus nunes": "Manchester City",
+"cristiano ronaldo": "Al-Nassr",
+"bruno fernandes": "Manchester United",
+"goncalo ramos": "Paris Saint-Germain",
+"bernardo silva": "Manchester City",
+"joao felix": "Al-Nassr",
+"jose sa": "Wolverhampton Wanderers",
+"renato veiga": "Villarreal",
+"goncalo inacio": "Sporting CP",
+"joao neves": "Paris Saint-Germain",
+"francisco trincao": "Sporting CP",
+"rafael leao": "Milan",
+"pedro neto": "Chelsea",
+"goncalo guedes": "Real Sociedad",
+"joao cancelo": "Barcelona",
+"ruben neves": "Al-Hilal",
+"rui silva": "Sporting CP",
+"vitinha": "Paris Saint-Germain",
+"samu costa": "Mallorca",
+"nuno mendes": "Paris Saint-Germain",
+"francisco conceicao": "Juventus",
+"utkir yusupov": "Navbahor Namangan",
+"abdukodir khusanov": "Manchester City",
+"khojiakbar alijonov": "Pakhtakor",
+"farrukh sayfiev": "Neftchi Fergana",
+"rustam ashurmatov": "Esteghlal",
+"akmal mozgovoy": "Pakhtakor",
+"otabek shukurov": "Baniyas",
+"jamshid iskanderov": "Neftchi Fergana",
+"odiljon hamrobekov": "Tractor",
+"jaloliddin masharipov": "Esteghlal",
+"oston urunov": "Persepolis",
+"abduvohid nematov": "Nasaf",
+"sherzod nasrullaev": "Nasaf",
+"eldor shomurodov": "İstanbul Başakşehir",
+"umar eshmurodov": "Nasaf",
+"botirali ergashev": "Neftchi Fergana",
+"dostonbek khamdamov": "Pakhtakor",
+"abdulla abdullaev": "Dibba",
+"azizjon ganiev": "Al Bataeh",
+"azizbek amonov": "Dinamo Samarqand",
+"igor sergeev": "Persepolis",
+"abbosbek fayzullaev": "İstanbul Başakşehir",
+"sherzod esanov": "Bukhara",
+"bekhruz karimov": "Surkhon Termiz",
+"avazbek ulmasaliev": "AGMK",
+"jakhongir urozov": "Dinamo Samarqand",
+"dominik livakovic": "Dinamo Zagreb",
+"josip stanisic": "Bayern Munich",
+"marin pongracic": "Fiorentina",
+"josko gvardiol": "Manchester City",
+"duje caletacar": "Real Sociedad",
+"josip sutalo": "Ajax",
+"nikola moro": "Bologna",
+"mateo kovacic": "Manchester City",
+"andrej kramaric": "TSG Hoffenheim",
+"luka modric": "Milan",
+"ante budimir": "Osasuna",
+"ivor pandur": "Hull City",
+"nikola vlasic": "Torino",
+"ivan perisic": "PSV Eindhoven",
+"mario pasalic": "Atalanta",
+"martin baturina": "Como",
+"petar sucic": "Inter Milan",
+"kristijan jakic": "FC Augsburg",
+"toni fruk": "Rijeka",
+"igor matanovic": "SC Freiburg",
+"luka sucic": "Real Sociedad",
+"luka vuskovic": "Hamburger SV",
+"dominik kotarski": "Copenhagen",
+"marco pasalic": "Orlando City SC",
+"martin erlic": "Midtjylland",
+"petar musa": "FC Dallas",
+"jordan pickford": "Everton",
+"ezri konsa": "Aston Villa",
+"nico oreilly": "Manchester City",
+"declan rice": "Arsenal",
+"john stones": "Manchester City",
+"marc guehi": "Manchester City",
+"bukayo saka": "Arsenal",
+"elliot anderson": "Nottingham Forest",
+"harry kane": "Bayern Munich",
+"jude bellingham": "Real Madrid",
+"marcus rashford": "Barcelona",
+"tino livramento": "Newcastle United",
+"dean henderson": "Crystal Palace",
+"jordan henderson": "Brentford",
+"dan burn": "Newcastle United",
+"kobbie mainoo": "Manchester United",
+"morgan rogers": "Aston Villa",
+"anthony gordon": "Newcastle United",
+"ollie watkins": "Aston Villa",
+"noni madueke": "Arsenal",
+"eberechi eze": "Arsenal",
+"ivan toney": "Al-Ahli",
+"james trafford": "Manchester City",
+"reece james": "Chelsea",
+"djed spence": "Tottenham Hotspur",
+"jarell quansah": "Bayer Leverkusen",
+"lawrence atizigi": "St. Gallen",
+"alidu seidu": "Rennes",
+"caleb yirenkyi": "Nordsjælland",
+"jonas adjetey": "VfL Wolfsburg",
+"thomas partey": "Villarreal",
+"abdul mumin": "Rayo Vallecano",
+"abdul fatawu": "Leicester City",
+"kwasi sibo": "Oviedo",
+"jordan ayew": "Leicester City",
+"brandon thomasasante": "Coventry City",
+"antoine semenyo": "Manchester City",
+"joseph anang": "St Patrick's Athletic",
+"christopher bonsu baah": "Al-Qadsiah",
+"gideon mensah": "Auxerre",
+"elisha owusu": "Auxerre",
+"benjamin asare": "Hearts of Oak",
+"abdul rahman baba": "PAOK",
+"jerome opoku": "İstanbul Başakşehir",
+"inaki williams": "Athletic Bilbao",
+"augustine boakye": "Saint-Étienne",
+"kojo peprah oppong": "Nice",
+"kamaldeen sulemana": "Atalanta",
+"derrick luckassen": "Pafos",
+"ernest nuamah": "Lyon",
+"prince kwabena adu": "Viktoria Plzeň",
+"marvin senaya": "Auxerre",
+"luis mejia": "Nacional",
+"cesar blackman": "Slovan Bratislava",
+"jose cordoba": "Norwich City",
+"fidel escobar": "Saprissa",
+"edgardo farina": "Pari Nizhny Novgorod",
+"cristian martinez": "Ironi Kiryat Shmona",
+"jose luis rodriguez": "Juárez",
+"adalberto carrasquilla": "Pumas UNAM",
+"tomas rodriguez": "Saprissa",
+"ismael diaz": "León",
+"yoel barcenas": "Mazatlán",
+"cesar samudio": "Marathón",
+"jiovany ramos": "Puerto Cabello",
+"carlos harvey": "Minnesota United FC",
+"eric davis": "Plaza Amador",
+"andres andrade": "LASK",
+"jose fajardo": "Universidad Católica",
+"cecilio waterman": "Universidad de Concepción",
+"alberto quintero": "Plaza Amador",
+"anibal godoy": "San Diego FC",
+"cesar yanis": "Cobresal",
+"orlando mosquera": "Al-Fayha",
+"michael amir murillo": "Beşiktaş",
+"azarias londono": "Universidad Católica",
+"roderick miller": "Turan Tovuz",
+"jorge gutierrez": "Deportivo La Guaira"
+};
+
+function normName(n) {
+  return (n||'').toLowerCase()
+    .replace(/ı/g,'i')
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z\s]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function wikiClub(espnName) {
+  if (!espnName) return null;
+  const full = normName(espnName);
+  if (WIKI_CLUBS[full]) return WIKI_CLUBS[full];
+  const parts = full.split(' ');
+  if (parts.length > 1) {
+    const last = parts[parts.length - 1];
+    const hit = Object.keys(WIKI_CLUBS).find(k => k === last || k.endsWith(' ' + last));
+    if (hit) return WIKI_CLUBS[hit];
+  }
+  return null;
+}
+
+// ── SALARY ESTIMATES ──────────────────────────────────────────────────────────
+const CLUB_SALARY = {
+  // Saudi Pro League (inflated by big signings)
+  'Al-Hilal':'~$9.0M','Al-Nassr':'~$8.5M','Al-Ahli':'~$7.5M','Al-Ittihad':'~$7.0M',
+  'Al-Qadsiah':'~$4.0M','Al-Ettifaq':'~$3.5M','Al-Shabab':'~$3.0M','Al-Tai':'~$2.0M',
+  // Top PL clubs
+  'Manchester City':'~$10.0M','Liverpool':'~$9.5M','Arsenal':'~$8.0M',
+  'Chelsea':'~$8.5M','Manchester United':'~$8.0M','Tottenham Hotspur':'~$6.5M',
+  'Newcastle United':'~$5.5M','Aston Villa':'~$5.0M','West Ham United':'~$4.5M',
+  'Fulham':'~$3.5M','Leicester City':'~$3.0M','Crystal Palace':'~$3.5M',
+  'Everton':'~$3.0M','Wolverhampton Wanderers':'~$3.5M','Brighton & Hove Albion':'~$4.0M',
+  'Nottingham Forest':'~$3.0M','Brentford':'~$3.0M','Bournemouth':'~$2.5M',
+  'Southampton':'~$2.5M','Ipswich Town':'~$2.0M','Watford':'~$2.0M',
+  'Sunderland':'~$1.5M','Norwich City':'~$1.5M',
+  // Top La Liga
+  'Real Madrid':'~$14.0M','Barcelona':'~$10.0M','Atlético Madrid':'~$7.0M',
+  'Real Betis':'~$4.0M','Villarreal':'~$3.5M','Athletic Club':'~$3.5M',
+  'Real Sociedad':'~$3.0M','Sevilla':'~$3.5M','Valencia':'~$2.5M',
+  'Levante':'~$1.5M','Castellón':'~$1.0M',
+  // Top Bundesliga
+  'Bayern Munich':'~$12.0M','Borussia Dortmund':'~$6.0M','Bayer Leverkusen':'~$5.5M',
+  'RB Leipzig':'~$5.0M','VfB Stuttgart':'~$3.5M','TSG Hoffenheim':'~$2.5M',
+  'Eintracht Frankfurt':'~$3.5M','SC Freiburg':'~$2.5M','Borussia Mönchengladbach':'~$3.0M',
+  'Wolfsburg':'~$3.0M','1. FSV Mainz 05':'~$2.5M','Union Berlin':'~$2.0M',
+  // Top Serie A
+  'Milan':'~$7.0M','AC Milan':'~$7.0M','Inter Milan':'~$7.5M','Juventus':'~$6.5M',
+  'Napoli':'~$5.5M','Roma':'~$5.0M','Lazio':'~$4.0M','Atalanta':'~$4.5M',
+  'Fiorentina':'~$3.5M','Torino':'~$2.5M','Parma':'~$2.0M','Sassuolo':'~$2.0M',
+  // Top Ligue 1
+  'Paris Saint-Germain':'~$12.0M','Olympique de Marseille':'~$4.0M',
+  'Olympique Lyonnais':'~$4.0M','Lyon':'~$4.0M','Monaco':'~$5.0M',
+  'Lille':'~$3.5M','Nice':'~$3.0M','Rennes':'~$3.0M','Lens':'~$2.5M',
+  // Eredivisie
+  'PSV Eindhoven':'~$3.5M','Ajax':'~$3.5M','Feyenoord Rotterdam':'~$3.0M',
+  'AZ':'~$2.5M','FC Twente':'~$2.0M','FC Utrecht':'~$1.5M',
+  // Primeira Liga
+  'Benfica':'~$4.0M','Porto':'~$4.0M','Sporting CP':'~$3.5M','Braga':'~$2.5M',
+  // Süper Lig
+  'Galatasaray':'~$3.5M','Fenerbahçe':'~$3.5M','Beşiktaş':'~$2.5M','Trabzonspor':'~$2.0M',
+  'Başakşehir':'~$1.5M','Kayserispor':'~$1.0M',
+  // Belgian Pro League
+  'Club Brugge':'~$2.5M','Anderlecht':'~$2.5M','KAA Gent':'~$2.0M','Standard Liège':'~$1.5M',
+  // Scottish
+  'Celtic':'~$2.0M','Rangers':'~$1.8M','Hearts':'~$1.0M',
+  // Portuguese/Other
+  'SL Benfica':'~$4.0M',
+  // MLS notable
+  'LAFC':'~$4.0M','Inter Miami':'~$4.5M','LA Galaxy':'~$3.0M','Seattle Sounders FC':'~$2.5M',
+  'New York City FC':'~$2.0M','New England Revolution':'~$1.8M','FC Cincinnati':'~$1.5M',
+  'New York Red Bulls':'~$1.5M','Toronto FC':'~$1.5M','Charlotte FC':'~$1.5M',
+  'Atlanta United':'~$1.8M','Colorado Rapids':'~$1.3M','Philadelphia Union':'~$1.5M',
+  'CF Montréal':'~$1.2M','Austin FC':'~$1.2M','FC Dallas':'~$1.2M',
+  'Sporting KC':'~$1.2M','Portland Timbers':'~$1.5M','Vancouver Whitecaps':'~$1.2M',
+  'Columbus Crew':'~$1.3M','FC St. Pauli':'~$1.5M',
+  // Brasileirão notable
+  'Flamengo':'~$2.5M','Palmeiras':'~$2.0M','Fluminense':'~$1.8M','Atlético Mineiro':'~$1.8M',
+  'São Paulo':'~$1.5M','Corinthians':'~$1.5M','Grêmio':'~$1.2M','Santos':'~$1.0M',
+  // Argentine
+  'River Plate':'~$1.5M','Boca Juniors':'~$1.5M','Vélez Sársfield':'~$1.0M',
+  // Chinese
+  'Zhejiang Professional FC':'~$2.0M',
+  // Greek
+  'AEK Athens':'~$1.5M','Olympiakos':'~$1.5M','PAOK':'~$1.2M',
+  // Czech
+  'Slavia Prague':'~$1.2M','Sparta Prague':'~$1.2M','Viktoria Plzeň':'~$0.9M',
+  // South African
+  'Mamelodi Sundowns':'~$0.7M','Orlando Pirates':'~$0.6M','Kaizer Chiefs':'~$0.6M',
+  // Japanese
+  'Kashima Antlers':'~$0.8M','Yokohama F. Marinos':'~$0.8M','Urawa Red Diamonds':'~$0.7M',
+  'Vissel Kobe':'~$1.2M','FC Tokyo':'~$0.7M',
+  // Korean
+  'Ulsan HD FC':'~$0.5M','Jeonbuk Hyundai Motors':'~$0.5M','FC Seoul':'~$0.5M',
+};
+const LEAGUE_SALARY = {
+  'Premier League':'~$5.5M','La Liga':'~$4.5M','Bundesliga':'~$3.5M',
+  'Serie A':'~$3.5M','Ligue 1':'~$3.0M','Eredivisie':'~$2.0M',
+  'Primeira Liga':'~$2.0M','Belgian Pro League':'~$2.0M','Süper Lig':'~$2.0M',
+  'Saudi Pro League':'~$7.0M','UAE Pro League':'~$2.5M','Egyptian Premier League':'~$0.5M',
+  'MLS':'~$1.5M','Liga MX':'~$1.5M','Brasileirão':'~$2.0M','Liga Profesional':'~$1.5M',
+  'Categoría Primera A':'~$0.8M','Liga FUTVE':'~$0.4M','División Profesional':'~$0.5M',
+  'Primera División':'~$0.8M','LPF':'~$0.5M','Liga Nacional':'~$0.4M',
+  'Scottish Premiership':'~$1.5M','Championship':'~$2.0M',
+  'Czech Liga':'~$1.0M','Ekstraklasa':'~$0.8M','Croatian HNL':'~$0.8M','HNL':'~$0.8M',
+  'Serbian Super Liga':'~$0.7M','Austrian Bundesliga':'~$1.2M',
+  'Swiss Super League':'~$1.2M','Danish Superliga':'~$1.0M','Allsvenskan':'~$0.8M',
+  'Super League Greece':'~$1.2M','Ukrainian Premier League':'~$0.8M',
+  'Chinese Super League':'~$1.5M','J1 League':'~$0.8M','K League 1':'~$0.5M',
+  'Uzbekistan Super League':'~$0.4M','Indonesian Liga 1':'~$0.3M',
+  'PSL':'~$0.6M','NPL':'~$0.3M','NPFL':'~$0.3M',
+  'Botola Pro':'~$0.4M','Ligue Sénégalaise':'~$0.3M','Elite One':'~$0.3M',
+  'Iraqi Premier League':'~$0.5M','Jordan Premier League':'~$0.4M',
+};
+function salaryEst(id, clubVal, leagueName) {
+  const pd = PLAYER_DATA[id]||{};
+  if (pd.salary) return {val: pd.salary, est: false};
+  if (clubVal && CLUB_SALARY[clubVal]) return {val: CLUB_SALARY[clubVal], est: true};
+  const lg = leagueName || LEAGUE_DATA[id];
+  if (lg && LEAGUE_SALARY[lg]) return {val: LEAGUE_SALARY[lg], est: true};
+  return null;
+}
+
+// ── DATE STRIP ────────────────────────────────────────────────────────────────
+function renderStrip() {
+  const inner = document.getElementById('strip-inner');
+  inner.innerHTML = WC_DATES.map((d,i) => {
+    const sel     = sameDay(d, selectedDate);
+    const isToday = sameDay(d, TODAY);
+    const isPast  = d < TODAY && !isToday;
+    const cls = [sel?'selected':'', isToday?'today':'', isPast?'past':''].filter(Boolean).join(' ');
+    const label = isToday ? 'TODAY' : DAY_ABBR[d.getDay()];
+    return `<div class="day-cell ${cls}" onclick="onDayClick(${i})">
+      <div class="day-name">${label}</div>
+      <div class="day-num">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+  applyOffset();
+  updateMonth();
+}
+function applyOffset() {
+  document.getElementById('strip-inner').style.transform = `translateX(-${stripOffset*60}px)`;
+}
+function updateMonth() {
+  const mid = WC_DATES[Math.min(stripOffset+Math.floor(VISIBLE/2), WC_DATES.length-1)];
+  document.getElementById('month-label').textContent = `${MONTH_NAMES[mid.getMonth()]} ${mid.getFullYear()}`;
+}
+function scrollTo(d) {
+  const i = WC_DATES.findIndex(x => sameDay(x,d));
+  if (i<0) return;
+  if (i < stripOffset) stripOffset = Math.max(0, i-2);
+  else if (i >= stripOffset+VISIBLE) stripOffset = Math.min(WC_DATES.length-VISIBLE, i-2);
+  applyOffset(); updateMonth();
+}
+document.getElementById('strip-left').onclick  = () => { stripOffset=Math.max(0,stripOffset-3); applyOffset(); updateMonth(); };
+document.getElementById('strip-right').onclick = () => { stripOffset=Math.min(WC_DATES.length-VISIBLE,stripOffset+3); applyOffset(); updateMonth(); };
+function onDayClick(i) {
+  selectedDate = new Date(WC_DATES[i]);
+  renderStrip();
+  loadAndShowGames(selectedDate);
+  closeLineup();
+}
+
+// ── FETCH GAMES ───────────────────────────────────────────────────────────────
+async function loadAndShowGames(date) {
+  const key = dateKey(date);
+  if (!gamesCache[key]) {
+    const sec = document.getElementById('matches-section');
+    sec.innerHTML = '<div class="loading-msg">⚽ Loading matches…</div>';
+    try {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=${key}`);
+      const d = await r.json();
+      gamesCache[key] = (d.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2);
+    } catch(e) { sec.innerHTML=`<div class="no-matches">Error: ${e.message}</div>`; return; }
+  }
+  renderMatchCards(gamesCache[key], date);
+}
+
+// ── MATCH CARD BUILDER ────────────────────────────────────────────────────────
+function buildMatchCard(e) {
+  const comp    = e.competitions[0];
+  const teams   = comp.competitors;
+  const away    = teams.find(t=>t.homeAway==='away') || teams[0];
+  const home    = teams.find(t=>t.homeAway==='home') || teams[1];
+  const st      = comp.status?.type;
+  const inProg  = st?.state==='in';
+  const isSch   = st?.state==='pre';
+  const clock   = comp.status?.displayClock||'';
+  const kickoff = isSch&&comp.date ? new Date(comp.date).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+  const isActive  = e.id===selectedEventId ? 'active' : '';
+  const liveClass = inProg ? 'live' : '';
+  let scoreHTML, statusHTML;
+  if (isSch) {
+    scoreHTML  = `<div class="score-vs">vs</div>`;
+    statusHTML = `<div class="score-time">${kickoff||'TBD'}</div>`;
+  } else {
+    scoreHTML  = `<div class="score-nums">${away.score??0} – ${home.score??0}</div>`;
+    statusHTML = inProg
+      ? `<div class="score-time"><span class="live-dot">●</span> ${clock}</div>`
+      : `<div class="score-ft">Full Time</div>`;
+  }
+  const preview = (typeof MATCH_PREVIEWS !== 'undefined' && MATCH_PREVIEWS[e.id])
+    ? `<div class="match-preview">${MATCH_PREVIEWS[e.id].text}</div>` : '';
+  const tileCity = comp.venue?.address?.city || comp.venue?.fullName || '';
+  const tileVenue = tileCity ? `<div style="font-size:0.68rem;color:#111;font-weight:700;margin-top:6px;text-align:center">📍 ${tileCity}</div>` : '';
+  return `<div class="match-card ${isActive} ${liveClass}" onclick="onMatchClick('${e.id}')">
+    <div class="match-comp">⚽ ${comp.notes?.[0]?.headline||'FIFA World Cup 2026'}</div>
+    <div class="match-teams">
+      <div class="team-side"><div class="team-flag-wrap">
+        ${flagImg(away.team.displayName, 40)}
+        <div class="team-name">${away.team.displayName}</div>
+      </div></div>
+      <div class="score-block">${scoreHTML}${statusHTML}</div>
+      <div class="team-side"><div class="team-flag-wrap">
+        ${flagImg(home.team.displayName, 40)}
+        <div class="team-name">${home.team.displayName}</div>
+      </div></div>
+    </div>${tileVenue}${preview}
+  </div>`;
+}
+
+function renderMatchCards(events, date) {
+  const sec = document.getElementById('matches-section');
+  const dateStr = date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  if (!events.length) {
+    sec.innerHTML = `<div class="date-heading">${dateStr}</div><div class="no-matches">No World Cup matches on this date</div>`;
+    return;
+  }
+  sec.innerHTML = `<div class="date-heading">${dateStr}</div><div class="match-grid">${events.map(e=>buildMatchCard(e)).join('')}</div>`;
+}
+
+// ── LEAGUE SLUG → DISPLAY NAME ────────────────────────────────────────────────
+const LEAGUE_NAMES = {
+  'eng.1':'Premier League','esp.1':'La Liga','ger.1':'Bundesliga',
+  'fra.1':'Ligue 1','ita.1':'Serie A','ned.1':'Eredivisie',
+  'por.1':'Primeira Liga','usa.1':'MLS','jpn.1':'J1 League',
+  'mex.1':'Liga MX','bra.1':'Brasileirão','arg.1':'Liga Profesional',
+  'tur.1':'Süper Lig','bel.1':'Belgian Pro League','sco.1':'Scottish Premiership',
+  'chn.1':'Chinese Super League','sau.1':'Saudi Pro League','kor.1':'K League 1',
+  'den.1':'Danish Superliga','swe.1':'Allsvenskan','swi.1':'Swiss Super League',
+  'gre.1':'Super League Greece','ukr.1':'Ukrainian Premier League','aus.1':'A-League',
+  'cze.1':'Czech Liga','cro.1':'HNL','ser.1':'Serbian Super Liga',
+  'pol.1':'Ekstraklasa','aut.1':'Austrian Bundesliga','saf.1':'PSL',
+  'egy.1':'Egyptian Premier League','nga.1':'NPFL','col.1':'Categoría Primera A',
+  'chi.1':'Primera División','uru.1':'Primera División','rou.1':'Superliga',
+};
+
+// ── ENRICH PLAYER DATA FROM ESPN (background, fills gaps) ─────────────────────
+async function enrichRosterData(eid) {
+  const rosters = rosterCache[eid]||[];
+  const nationalTeamIds = [...new Set(rosters.map(t=>t.team?.id).filter(Boolean))];
+  const playerClubRefs = {};
+  for (const natId of nationalTeamIds) {
+    try {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/teams/${natId}/roster`,{signal:AbortSignal.timeout(10000)});
+      const d = await r.json();
+      for (const a of (d.athletes||[])) {
+        if (PLAYER_DATA[a.id] || dynamicPlayerData[a.id]) continue;
+        const leagueSlug = (a.defaultLeague?.$ref||'').match(/leagues\/([^?/]+)/)?.[1]||'';
+        const clubTeamId = (a.defaultTeam?.$ref||'').match(/teams\/(\d+)/)?.[1]||'';
+        if (!leagueSlug || leagueSlug==='fifa.world' || clubTeamId===natId) continue;
+        playerClubRefs[a.id] = { leagueSlug, clubTeamId };
+      }
+    } catch {}
+  }
+  const clubNameCache = {};
+  const uniqueCombos = [...new Set(Object.values(playerClubRefs).map(v=>`${v.leagueSlug}/${v.clubTeamId}`))];
+  await Promise.all(uniqueCombos.map(async combo => {
+    const [league, teamId] = combo.split('/');
+    try {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/teams/${teamId}`,{signal:AbortSignal.timeout(6000)});
+      const d = await r.json();
+      const name = d.team?.displayName||d.team?.name;
+      if (name) clubNameCache[`${league}_${teamId}`] = name;
+    } catch {}
+  }));
+  for (const [athleteId, {leagueSlug, clubTeamId}] of Object.entries(playerClubRefs)) {
+    const club   = clubNameCache[`${leagueSlug}_${clubTeamId}`]||null;
+    const league = LEAGUE_NAMES[leagueSlug]||leagueSlug.toUpperCase();
+    dynamicPlayerData[athleteId] = { club, league: club ? league : null };
+  }
+  if (selectedEventId===eid) {
+    const evt = Object.values(gamesCache).flat().find(e=>e.id===eid);
+    if (evt) renderLineups(eid, evt);
+  }
+}
+
+// Extract scoring plays from ESPN summary response.
+// ESPN soccer uses `scoringPlays` for current/recent games and
+// `header.competitions[0].details` for older completed games.
+function extractScoringPlays(d) {
+  // Primary source (live/recent games — athletes already in athletesInvolved)
+  if (d.scoringPlays?.length) {
+    return d.scoringPlays;
+  }
+  // Fallback: header details (completed games — athletes in participants[].athlete)
+  const details = d.header?.competitions?.[0]?.details;
+  if (details?.length) {
+    return details.filter(det => det.scoringPlay).map(det => {
+      const parts = det.participants||[];
+      const scorer = parts[0]?.athlete || null;
+      const assist = parts[1]?.athlete || null;
+      const typeText = det.penaltyKick ? 'Penalty' : det.ownGoal ? 'Own Goal' : 'Goal';
+      return {
+        clock: det.clock,
+        team:  det.team,
+        type:  { text: typeText },
+        athletesInvolved: [
+          ...(scorer ? [{ type: 'scorer', shortName: scorer.shortName, displayName: scorer.displayName }] : []),
+          ...(assist ? [{ type: 'assist', shortName: assist.shortName, displayName: assist.displayName }] : []),
+        ],
+      };
+    });
+  }
+  return [];
+}
+
+async function onMatchClick(eid) {
+  selectedEventId = eid;
+  const key = dateKey(selectedDate);
+  if (filteredTeamId && teamScheduleCache[filteredTeamId]) {
+    renderTeamSchedule(teamScheduleCache[filteredTeamId]);
+  } else {
+    if (gamesCache[key]) renderMatchCards(gamesCache[key], selectedDate);
+  }
+  const panel = document.getElementById('lineup-panel');
+  panel.style.display = 'block';
+  panel.innerHTML = '<div class="loading-msg">Loading lineups…</div>';
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+  const evt = Object.values(gamesCache).flat().find(e=>e.id===eid);
+  try {
+    if (!rosterCache[eid]) {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/summary?event=${eid}`);
+      const d = await r.json();
+      rosterCache[eid]  = d.rosters||[];
+      scoringCache[eid] = extractScoringPlays(d);
+      cacheTeamSalaries(rosterCache[eid]);
+    }
+    renderLineups(eid, evt);
+    enrichRosterData(eid);
+  } catch(e) { panel.innerHTML=`<div class="no-lineup">Error: ${e.message}</div>`; }
+}
+
+function closeLineup() {
+  selectedEventId = null;
+  const p = document.getElementById('lineup-panel');
+  p.style.display='none'; p.innerHTML='';
+}
+
+async function refreshLineups(eid) {
+  const btn = document.getElementById(`refresh-btn-${eid}`);
+  if (btn) { btn.textContent='↻ Refreshing…'; btn.disabled=true; }
+  delete rosterCache[eid];
+  delete scoringCache[eid];
+  try {
+    const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/summary?event=${eid}`);
+    const d = await r.json();
+    rosterCache[eid]  = d.rosters||[];
+    scoringCache[eid] = extractScoringPlays(d);
+    cacheTeamSalaries(rosterCache[eid]);
+    const evDate = Object.values(gamesCache).flat().find(e=>e.id===eid);
+    const dateK  = evDate ? dateKey(new Date(evDate.date)) : null;
+    if (dateK) {
+      const sr = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=${dateK}`);
+      const sd = await sr.json();
+      gamesCache[dateK] = (sd.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2);
+    }
+    const evt = Object.values(gamesCache).flat().find(e=>e.id===eid);
+    renderLineups(eid, evt);
+    enrichRosterData(eid);
+  } catch { if (btn) { btn.textContent='↻ Refresh Lineups'; btn.disabled=false; } }
+}
+
+// ── RENDER LINEUPS ────────────────────────────────────────────────────────────
+function renderLineups(eid, evt) {
+  const panel   = document.getElementById('lineup-panel');
+  const rosters = rosterCache[eid]||[];
+  const comp    = evt?.competitions?.[0];
+  const teams   = comp?.competitors||[];
+  const away    = teams.find(t=>t.homeAway==='away')||teams[0]||{};
+  const home    = teams.find(t=>t.homeAway==='home')||teams[1]||{};
+  const st      = comp?.status?.type;
+  const inProg  = st?.state==='in';
+  const isFT    = st?.completed;
+  const isSch   = st?.state==='pre';
+  const clock   = comp?.status?.displayClock||'';
+  const liveClass = inProg ? 'live' : '';
+  const scoreHTML = isSch
+    ? `<div class="lineup-score" style="color:rgba(255,255,255,0.4);font-size:1.4rem">vs</div>`
+    : `<div class="lineup-score">${away.score??0} – ${home.score??0}</div>`;
+  const statusTxt = inProg ? `<span class="live-dot">●</span> ${clock}` : isFT ? 'FULL TIME' : 'SCHEDULED';
+  const venueCity = comp?.venue?.address?.city || comp?.venue?.fullName || '';
+  const venueHTML = venueCity ? `<div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:6px;letter-spacing:0.5px">📍 ${venueCity}</div>` : '';
+
+  // ── Goal events section ──────────────────────────────────────────
+  const scoringPlays = scoringCache[eid]||[];
+  let goalsSectionHTML = '';
+  if (!isSch) {
+    const awayId = away.team?.id;
+    const awayGoals = [];
+    const homeGoals = [];
+    scoringPlays.forEach(sp => {
+      const min      = sp.clock?.displayValue || (sp.clock?.value ? `${sp.clock.value}'` : '');
+      const involved = sp.athletesInvolved||[];
+      const scorer   = involved.find(a=>a.type==='scorer')||involved[0]||null;
+      const assist   = involved.find(a=>a.type==='assist')||null;
+      const scorerName = scorer?.shortName||scorer?.displayName||'';
+      const assistName = assist?.shortName||assist?.displayName||'';
+      const typeText   = (sp.type?.text||'').toLowerCase();
+      const icon = typeText.includes('penalty') ? '⚽ P' : typeText.includes('own') ? '⚽ OG' : '⚽';
+      const row = `<div class="goal-row">
+        <span class="goal-min">${min||'–'}</span>
+        <span class="goal-icon">${icon}</span>
+        <div class="goal-names">
+          <span class="goal-scorer">${scorerName||'Unknown'}</span>
+          ${assistName ? `<span class="goal-assist">↳ Assist: ${assistName}</span>` : ''}
+        </div>
+      </div>`;
+      if (sp.team?.id === awayId) awayGoals.push(row); else homeGoals.push(row);
+    });
+    const awayTeamName = away.team?.displayName||'Away';
+    const homeTeamName = home.team?.displayName||'Home';
+    const bbcUrl = bbcLinksCache[eid];
+    const bbcHTML = bbcUrl
+      ? `<div style="text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.07)">
+          <a href="${bbcUrl}" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:700;
+            color:#fff;background:#c00;padding:6px 16px;border-radius:20px;text-decoration:none;
+            letter-spacing:0.04em;transition:background 0.15s"
+            onmouseover="this.style.background='#a00'" onmouseout="this.style.background='#c00'">
+            <span style="font-size:1rem">📰</span> BBC Sport Match Recap
+          </a>
+        </div>`
+      : '';
+    if (scoringPlays.length) {
+      goalsSectionHTML = `<div class="goals-section">
+        <div class="goals-section-header">⚽ Goals</div>
+        <div class="goals-grid">
+          <div class="goals-col">
+            <div class="goals-col-header">${flagImg(awayTeamName,16)} ${awayTeamName}</div>
+            ${awayGoals.length ? awayGoals.join('') : '<div class="goals-empty">–</div>'}
+          </div>
+          <div class="goals-col">
+            <div class="goals-col-header">${flagImg(homeTeamName,16)} ${homeTeamName}</div>
+            ${homeGoals.length ? homeGoals.join('') : '<div class="goals-empty">–</div>'}
+          </div>
+        </div>
+        ${bbcHTML}
+      </div>`;
+    } else if (bbcHTML) {
+      goalsSectionHTML = `<div class="goals-section">${bbcHTML}</div>`;
+    }
+  }
+
+  // ── Roster grids (may be absent for past games) ──────────────────
+  let gridsHTML = '';
+  if (rosters.length) {
+    rosters.forEach((_,i) => { if (!sortState[`${eid}_${i}`]) sortState[`${eid}_${i}`]={col:'status',dir:'asc'}; });
+    gridsHTML = `<div class="grids-row" id="grids-row">${rosters.map((t,i) => buildTeamGrid(t, eid, i)).join('')}</div>`;
+  } else if (isSch) {
+    gridsHTML = `<div class="no-lineup">Lineups not yet confirmed for this match.<br><span style="font-size:0.75rem;color:#bbb">Check back closer to kick-off.</span></div>`;
+  }
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div onclick="closeLineup()" class="lineup-back" style="margin-bottom:0">← Back to matches</div>
+      <button onclick="refreshLineups('${eid}')" class="lineup-back" id="refresh-btn-${eid}" style="margin-bottom:0;border-color:#002868;color:#002868">↻ Refresh Lineups</button>
+    </div>
+    <div class="lineup-match-header ${liveClass}">
+      <div class="lineup-teams-header">
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(away.team?.displayName||'',40)} ${away.team?.displayName||''}</div>
+        <div style="color:rgba(255,255,255,0.3);font-size:1.8rem;margin:0 12px">·</div>
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(home.team?.displayName||'',40)} ${home.team?.displayName||''}</div>
+      </div>
+      ${scoreHTML}
+      <div class="lineup-status ${liveClass}">${statusTxt}</div>
+      ${venueHTML}
+    </div>
+    ${goalsSectionHTML}
+    ${gridsHTML}`;
+}
+
+// ── SORT + TEAM GRID ──────────────────────────────────────────────────────────
+function parseSalary(s) {
+  if (!s) return -1;
+  const m = String(s).replace(/[~$,\s]/g,'').match(/^([\d.]+)([KMB]?)$/i);
+  if (!m) return -1;
+  const mult = {K:0.001,B:1000}[m[2]?.toUpperCase()]||1;
+  const n = parseFloat(m[1]);
+  return isNaN(n) ? -1 : n*mult;
+}
+
+function getSortValue(p, col) {
+  const id    = p.athlete?.id||'';
+  const extra = PLAYER_DATA[id]||{};
+  const dyn   = dynamicPlayerData[id]||{};
+  const full  = p.athlete?.fullName||p.athlete?.displayName||'';
+  const parts = full.trim().split(' ');
+  switch(col) {
+    case 'jersey': return parseInt(p.jersey)||999;
+    case 'first':  return (parts.slice(0,-1).join(' ')||'').toLowerCase();
+    case 'last':   return (p.athlete?.lastName||parts[parts.length-1]||'').toLowerCase();
+    case 'pos':    return (p.position?.abbreviation||'').toLowerCase();
+    case 'club':   return (extra.club||dyn.club||wikiClub(full)||'zzz').toLowerCase();
+    case 'salary': { const s=salaryEst(id,extra.club||dyn.club||wikiClub(full),null); return s?parseSalary(s.val):0; }
+    case 'status': return p.starter ? 0 : 1;
+    default:       return 0;
+  }
+}
+
+function onSort(eid, teamIdx, col) {
+  const key = `${eid}_${teamIdx}`;
+  const cur = sortState[key]||{col:'status',dir:'asc'};
+  sortState[key] = {col, dir: cur.col===col && cur.dir==='asc' ? 'desc' : 'asc'};
+  const wrap = document.getElementById(`team-grid-${eid}-${teamIdx}`);
+  if (wrap) wrap.outerHTML = buildTeamGrid((rosterCache[eid]||[])[teamIdx], eid, teamIdx);
+}
+
+function buildTeamGrid(teamData, eid, teamIdx) {
+  const name     = teamData.team?.displayName||'Team';
+  const roster   = teamData.roster||[];
+  const starters = roster.filter(p=>p.starter);
+  const bench    = roster.filter(p=>!p.starter);
+  const key = `${eid}_${teamIdx}`;
+  const {col, dir} = sortState[key]||{col:'status',dir:'asc'};
+  const allSorted = [...roster].sort((a,b) => {
+    const av=getSortValue(a,col), bv=getSortValue(b,col);
+    const cmp = typeof av==='number' ? av-bv : av.localeCompare(bv);
+    return dir==='asc' ? cmp : -cmp;
+  });
+  const arrow = c => c!==col ? '<span class="sort-icon">⇅</span>' : dir==='asc' ? '<span class="sort-icon">↑</span>' : '<span class="sort-icon">↓</span>';
+  const thCls = c => c===col ? (dir==='asc'?'sort-asc':'sort-desc') : '';
+  const rows = allSorted.map(p => {
+    const isStarter = p.starter;
+    const athlete   = p.athlete||{};
+    const id        = athlete.id||'';
+    const full      = athlete.fullName||athlete.displayName||'';
+    const parts     = full.trim().split(' ');
+    const last      = athlete.lastName||parts[parts.length-1]||'';
+    const first     = parts.slice(0,-1).join(' ');
+    const pos       = p.position?.abbreviation||'';
+    const jersey    = p.jersey||'—';
+    const extra     = PLAYER_DATA[id]||{};
+    const dyn       = dynamicPlayerData[id]||{};
+    const espnUrl   = athlete.links?.find(l=>l.rel?.includes('playercard'))?.href||`https://www.espn.com/soccer/player/_/id/${id}`;
+    const clubVal   = extra.club||dyn.club||wikiClub(full);
+    const clubHTML  = clubVal ? clubVal : '<span class="no-data">—</span>';
+    const sal = salaryEst(id, clubVal, null);
+    const salaryHTML = sal
+      ? `<span class="salary-cell">${sal.val}<span class="salary-est">${sal.est?' est.':' est.'}</span></span>`
+      : '<span class="no-data">—</span>';
+    const badge = isStarter ? '<span class="start-badge">Starter</span>' : '<span class="bench-badge">Bench</span>';
+    return `<tr class="${isStarter?'starter-row':'bench-row'}">
+      <td>${jersey}</td>
+      <td><a class="player-link" href="${espnUrl}" target="_blank" rel="noopener">${first}</a></td>
+      <td><a class="player-link" href="${espnUrl}" target="_blank" rel="noopener">${last}</a></td>
+      <td class="pos-badge">${pos}</td>
+      <td class="club-cell">${clubHTML}</td>
+      <td>${salaryHTML}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
+  // Sum known salaries for this roster
+  const salaryTotal = roster.reduce((sum, p) => {
+    const id = p.athlete?.id||'';
+    const sal = salaryEst(id, PLAYER_DATA[id]?.club||dynamicPlayerData[id]?.club||null, null);
+    if (!sal) return sum;
+    const m = sal.val.match(/\$([\d.]+)([MK])/);
+    if (!m) return sum;
+    return sum + (parseFloat(m[1]) * (m[2]==='M' ? 1_000_000 : 1_000));
+  }, 0);
+  const knownCount = roster.filter(p => {
+    const id = p.athlete?.id||'';
+    return !!salaryEst(id, PLAYER_DATA[id]?.club||dynamicPlayerData[id]?.club||null, null);
+  }).length;
+  const totalDisplay = salaryTotal >= 1_000_000
+    ? `~$${(salaryTotal/1_000_000).toFixed(1)}M`
+    : salaryTotal > 0 ? `~$${(salaryTotal/1000).toFixed(0)}K` : null;
+
+  return `<div class="team-grid-wrap" id="team-grid-${eid}-${teamIdx}">
+    <div class="team-grid-header">
+      <span class="tg-flag">${flagImg(name, 80)}</span>
+      <div style="flex:1"><div class="tg-name">${name}</div>
+      <div class="tg-meta">${starters.length} starters · ${bench.length} bench · click column to sort</div></div>
+      ${totalDisplay ? `<div style="text-align:right"><div class="tg-name">${totalDisplay}</div><div class="tg-meta">est. total club salaries (${knownCount}/${roster.length} players)</div></div>` : ''}
+    </div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr>
+        <th class="${thCls('jersey')}" onclick="onSort('${eid}',${teamIdx},'jersey')"># ${arrow('jersey')}</th>
+        <th class="${thCls('first')}"  onclick="onSort('${eid}',${teamIdx},'first')">First ${arrow('first')}</th>
+        <th class="${thCls('last')}"   onclick="onSort('${eid}',${teamIdx},'last')">Last ${arrow('last')}</th>
+        <th class="${thCls('pos')}"    onclick="onSort('${eid}',${teamIdx},'pos')">Pos ${arrow('pos')}</th>
+        <th class="${thCls('club')}"   onclick="onSort('${eid}',${teamIdx},'club')">Club ${arrow('club')}</th>
+        <th class="${thCls('salary')}" onclick="onSort('${eid}',${teamIdx},'salary')" style="text-align:right">Salary ${arrow('salary')}</th>
+        <th class="${thCls('status')}" onclick="onSort('${eid}',${teamIdx},'status')">Status ${arrow('status')}</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+}
+
+// ── SHARED CACHE LOADERS ──────────────────────────────────────────────────────
+async function ensureTeams() {
+  if (allWCTeams.length) return;
+  try {
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/teams?limit=100');
+    const d = await r.json();
+    const raw = d.sports?.[0]?.leagues?.[0]?.teams || d.teams || [];
+    for (const t of raw) {
+      const tm = t.team||t;
+      if (tm?.id && tm?.displayName) allWCTeams.push({id:String(tm.id), displayName:tm.displayName});
+    }
+    allWCTeams.sort((a,b)=>a.displayName.localeCompare(b.displayName));
+  } catch {}
+}
+
+async function ensureAllGamesCache() {
+  if (allGamesCache) return;
+  const ranges = ['20260611-20260630','20260701-20260726'];
+  const all = [];
+  for (const range of ranges) {
+    try {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=${range}&limit=200`);
+      const d = await r.json();
+      all.push(...(d.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2));
+    } catch {}
+  }
+  allGamesCache = all;
+  for (const ev of all) {
+    const k = dateKey(new Date(ev.date));
+    if (!gamesCache[k]) gamesCache[k] = [];
+    if (!gamesCache[k].find(x=>x.id===ev.id)) gamesCache[k].push(ev);
+  }
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────────────────────
+function switchView(mode) {
+  currentView = mode;
+  document.getElementById('tab-date').classList.toggle('active', mode==='date');
+  document.getElementById('tab-team').classList.toggle('active', mode==='team');
+  document.getElementById('tab-city').classList.toggle('active', mode==='city');
+  document.querySelector('.date-bar')?.scrollIntoView({behavior:'smooth', block:'start'});
+  closeLineup();
+
+  if (mode==='date') {
+    filteredTeamId=null; filteredTeamName=null; filteredCity=null;
+    loadAndShowGames(selectedDate);
+  } else if (mode==='team') {
+    filteredCity=null; filteredTeamId=null; filteredTeamName=null;
+    showNationGrid();
+  } else if (mode==='city') {
+    filteredTeamId=null; filteredTeamName=null;
+    showCityGrid();
+  }
+}
+
+// ── CITY TILES ────────────────────────────────────────────────────────────────
+function showCityGrid() {
+  const sec = document.getElementById('matches-section');
+  sec.innerHTML = `
+    <div style="max-width:920px;margin:0 auto;padding:16px">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#888;margin-bottom:12px">Select a host city</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${HOST_CITIES.map(c => `
+          <div onclick="selectCity('${c.name.replace(/'/g,"\\'")}')"
+            style="display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;
+            cursor:pointer;font-size:0.78rem;font-weight:600;color:#1a1a2e;
+            background:rgba(255,255,255,0.85);border:1px solid rgba(0,40,104,0.15);
+            box-shadow:0 1px 4px rgba(0,0,0,0.06)"
+            onmouseover="this.style.background='rgba(191,10,48,0.08)';this.style.borderColor='#BF0A30';this.style.color='#BF0A30'"
+            onmouseout="this.style.background='rgba(255,255,255,0.85)';this.style.borderColor='rgba(0,40,104,0.15)';this.style.color='#1a1a2e'">
+            ${c.flag} <span>${c.name}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCityPicker() { showCityGrid(); } // legacy alias
+
+function _DEAD_renderCityPicker_chips() {
+  const el = document.getElementById('city-chips');
+  if (!el) return;
+  el.innerHTML = HOST_CITIES.map(c => {
+    const sel = filteredCity===c.name ? 'selected' : '';
+    return `<div class="team-chip ${sel}" onclick="selectCity('${c.name.replace(/'/g,"\\'")}')">${c.flag} <span>${c.name}</span></div>`;
+  }).join('');
+}
+
+async function selectCity(cityName) {
+  filteredCity = cityName;
+  renderCityPicker();
+  closeLineup();
+  const sec = document.getElementById('matches-section');
+  sec.innerHTML = `<div class="loading-msg">📍 Loading ${cityName} matches…</div>`;
+  await loadCityGames(cityName);
+}
+
+async function loadCityGames(cityName) {
+  const sec = document.getElementById('matches-section');
+  try {
+    await ensureAllGamesCache();
+
+    // Match by venue city — ESPN returns city in venue.address.city or venue.fullName
+    const city = HOST_CITIES.find(c=>c.name===cityName);
+    const matches = allGamesCache.filter(ev => {
+      const comp = ev.competitions?.[0];
+      const vCity = (comp?.venue?.address?.city||'').toLowerCase();
+      const vName = (comp?.venue?.fullName||'').toLowerCase();
+      const cLow  = cityName.toLowerCase();
+      if (vCity.includes(cLow)) return true;
+      // fallback: check venue name against known venue
+      if (city && vName.includes(city.venue.split(' ')[0].toLowerCase())) return true;
+      // special cases: New York → East Rutherford, San Francisco → Santa Clara
+      if (cLow==='new york'    && (vCity.includes('east rutherford')||vName.includes('metlife'))) return true;
+      if (cLow==='san francisco' && (vCity.includes('santa clara')||vName.includes("levi"))) return true;
+      if (cLow==='boston'      && vCity.includes('foxborough')) return true;
+      if (cLow==='kansas city' && vCity.includes('kansas')) return true;
+      return false;
+    }).sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+    if (!matches.length) {
+      sec.innerHTML = `<div class="team-filter-bar">📍 ${cityName} <button class="clear-btn" onclick="switchView('date')">✕ Clear</button></div><div class="no-matches">No matches found for ${cityName}.</div>`;
+      return;
+    }
+
+    const byDate = new Map();
+    for (const ev of matches) {
+      const label = new Date(ev.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+      if (!byDate.has(label)) byDate.set(label,[]);
+      byDate.get(label).push(ev);
+      // populate gamesCache so lineup click works
+      const k = dateKey(new Date(ev.date));
+      if (!gamesCache[k]) gamesCache[k]=[];
+      if (!gamesCache[k].find(x=>x.id===ev.id)) gamesCache[k].push(ev);
+    }
+
+    let html = `<div class="team-filter-bar">📍 ${cityName} — ${matches.length} Match${matches.length!==1?'es':''} <button class="clear-btn" onclick="showCityGrid()">← Cities</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
+    let first = true;
+    for (const [label, evs] of byDate) {
+      html += `<div class="match-date-sep${first?' first':''}">${label}</div><div class="match-grid">${evs.map(e=>buildMatchCard(e)).join('')}</div>`;
+      first = false;
+    }
+    sec.innerHTML = html;
+  } catch(e) {
+    sec.innerHTML = `<div class="no-matches">Error loading ${cityName} games: ${e.message}</div>`;
+  }
+}
+
+async function fetchAllTeams() {
+  try {
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/teams?limit=100',{signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    const raw = d.sports?.[0]?.leagues?.[0]?.teams || d.teams || [];
+    for (const t of raw) {
+      const tm = t.team||t;
+      if (tm?.id && tm?.displayName) allWCTeams.push({id:String(tm.id), displayName:tm.displayName});
+    }
+    allWCTeams.sort((a,b)=>a.displayName.localeCompare(b.displayName));
+    renderTeamPicker();
+  } catch {}
+}
+
+function renderTeamPicker() {} // legacy no-op — nation view now uses showNationGrid()
+
+function cacheTeamSalaries(rosters) {
+  for (const teamData of rosters||[]) {
+    const tid = String(teamData.team?.id||'');
+    if (!tid || teamSalaryCache[tid]) continue;
+    let total = 0, count = 0;
+    for (const p of teamData.roster||[]) {
+      const id = p.athlete?.id||'';
+      const sal = salaryEst(id, PLAYER_DATA[id]?.club||dynamicPlayerData[id]?.club||null, null);
+      if (!sal) continue;
+      const m = sal.val.match(/\$([\d.]+)([MK])/);
+      if (!m) continue;
+      total += parseFloat(m[1]) * (m[2]==='M' ? 1_000_000 : 1_000);
+      count++;
+    }
+    if (total > 0) teamSalaryCache[tid] = {total, count, rosterSize: (teamData.roster||[]).length};
+  }
+}
+
+let nationSortMode = 'alpha'; // 'alpha' | 'salary'
+
+function showNationGrid() {
+  const sec = document.getElementById('matches-section');
+  const sorted = [...WC48].sort((a, b) => {
+    if (nationSortMode === 'salary') {
+      const sa = teamSalaryCache[a.id]?.total || 0;
+      const sb = teamSalaryCache[b.id]?.total || 0;
+      if (sa !== sb) return sb - sa; // highest first
+    }
+    return a.name.localeCompare(b.name);
+  });
+  sec.innerHTML = `
+    <div style="width:80%;margin:0 auto;padding:20px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#888">Select a nation</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="nationSortMode='alpha';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='alpha'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='alpha'?'#002868':'transparent'};color:${nationSortMode==='alpha'?'#fff':'#555'};cursor:pointer">A–Z</button>
+          <button onclick="nationSortMode='salary';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='salary'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='salary'?'#002868':'transparent'};color:${nationSortMode==='salary'?'#fff':'#555'};cursor:pointer">$ Salary</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px">
+        ${sorted.map(t => {
+          const sal = teamSalaryCache[t.id];
+          const salLine = sal
+            ? `<div style="font-size:0.72rem;font-weight:700;color:#002868;margin-top:4px">~$${(sal.total/1_000_000).toFixed(1)}M</div><div style="font-size:0.58rem;color:#999">${sal.count}/${sal.rosterSize} players</div>`
+            : '';
+          return `
+          <div onclick="selectTeam('${t.id}','${t.name.replace(/'/g,"\\'")}')"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 12px 14px;
+            border-radius:14px;cursor:pointer;background:rgba(255,255,255,0.92);
+            border:2px solid rgba(255,255,255,0.6);box-shadow:0 4px 20px rgba(0,0,0,0.25);
+            backdrop-filter:blur(6px);transition:transform 0.12s,box-shadow 0.12s,border-color 0.12s"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(191,10,48,0.12)';this.style.borderColor='#FFD700'"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.25)';this.style.borderColor='rgba(255,255,255,0.6)'">
+            <img src="https://flagcdn.com/w80/${t.iso}.png" alt="${t.name}"
+              style="width:52px;height:auto;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,0.18)">
+            <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.12em;color:#999;line-height:1">${t.abbr}</div>
+            <div style="font-size:0.8rem;font-weight:600;color:#1a1a2e;text-align:center;line-height:1.2">${t.name}</div>
+            ${salLine}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+async function selectTeam(teamId, teamName) {
+  filteredTeamId=teamId; filteredTeamName=teamName;
+  renderTeamPicker(); closeLineup();
+  const sec = document.getElementById('matches-section');
+  sec.innerHTML = `<div class="loading-msg">⚽ Loading ${teamName} schedule…</div>`;
+  try {
+    if (!teamScheduleCache[teamId]) {
+      // Use full tournament cache (loaded at startup); fetch if not ready yet
+      if (!allGamesCache) await ensureAllGamesCache();
+      const evts = allGamesCache.filter(ev =>
+        ev.competitions?.[0]?.competitors?.some(c => String(c.team?.id)===String(teamId))
+      );
+      for (const ev of evts) {
+        const k = dateKey(new Date(ev.date));
+        if (!gamesCache[k]) gamesCache[k]=[];
+        if (!gamesCache[k].find(x=>x.id===ev.id)) gamesCache[k].push(ev);
+      }
+      teamScheduleCache[teamId] = evts;
+    }
+    renderTeamSchedule(teamScheduleCache[teamId]);
+  } catch(e) { sec.innerHTML=`<div class="no-matches">Could not load schedule for ${teamName}: ${e.message}</div>`; }
+}
+
+function renderTeamSchedule(events) {
+  const sec = document.getElementById('matches-section');
+  if (!events||!events.length) {
+    sec.innerHTML=`<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button></div><div class="no-matches">No matches found.</div>`;
+    return;
+  }
+  const sorted = [...events].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const byDate = new Map();
+  for (const ev of sorted) {
+    const label = new Date(ev.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    if (!byDate.has(label)) byDate.set(label,[]);
+    byDate.get(label).push(ev);
+  }
+  let html = `<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
+  let first = true;
+  for (const [label, evs] of byDate) {
+    html += `<div class="match-date-sep${first?' first':''}">${label}</div><div class="match-grid">${evs.map(e=>buildMatchCard(e)).join('')}</div>`;
+    first = false;
+  }
+  sec.innerHTML = html;
+}
+
+// ── AUTO REFRESH ──────────────────────────────────────────────────────────────
+// Live score tick — updates today's slice of the shared cache every 60s.
+// Only fires when there are games in progress to avoid unnecessary calls.
+async function tickLiveScores() {
+  const key = dateKey(selectedDate);
+  const today = gamesCache[key] || [];
+  const hasLive = today.some(e => e.competitions?.[0]?.status?.type?.state === 'in');
+  if (!hasLive) return;
+  try {
+    const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=${key}`);
+    const d = await r.json();
+    const fresh = (d.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2);
+    gamesCache[key] = fresh;
+    if (allGamesCache) {
+      for (const ev of fresh) {
+        const idx = allGamesCache.findIndex(x=>x.id===ev.id);
+        if (idx>=0) allGamesCache[idx]=ev; else allGamesCache.push(ev);
+      }
+    }
+    if (currentView==='date') renderMatchCards(gamesCache[key], selectedDate);
+    if (selectedEventId) {
+      const evt = gamesCache[key]?.find(e=>e.id===selectedEventId);
+      if (evt && rosterCache[selectedEventId]) renderLineups(selectedEventId, evt);
+    }
+  } catch {}
+}
+setInterval(tickLiveScores, 60000);
+
+// ── TROPHY KALEIDOSCOPE ───────────────────────────────────────────────────────
+(function spawnTrophies() {
+  const bg   = document.getElementById('trophy-bg');
+  const pool = ['🏆','🏆','🏆','🏆','🏆','🏆','🏆','🏆','⚽','⚽','⚽','⭐','🌟','✨','🥇','🎖️'];
+  const tiers = [[18,14,50,0.20,0.50],[14,60,110,0.15,0.40],[10,120,190,0.10,0.28],[7,200,300,0.07,0.20],[5,320,480,0.05,0.14]];
+  const rand = (a,b) => a+Math.random()*(b-a);
+  tiers.forEach(([count,minSz,maxSz,minOp,maxOp]) => {
+    for (let i=0;i<count;i++) {
+      const el    = document.createElement('div');
+      const emoji = pool[Math.floor(Math.random()*pool.length)];
+      const size  = rand(minSz,maxSz);
+      const x=rand(-8,105), y=rand(-5,105);
+      const rot0=rand(-180,180), rot1=rot0+rand(-25,25);
+      const op=rand(minOp,maxOp), dur=rand(6,18)+'s', delay=rand(0,8)+'s';
+      const glow = emoji==='🏆' ? `drop-shadow(0 0 ${rand(8,30).toFixed(0)}px rgba(255,200,0,${rand(0.3,0.7).toFixed(2)}))` : '';
+      el.className='tb'; el.textContent=emoji;
+      el.style.cssText=[`left:${x}%`,`top:${y}%`,`font-size:${size}px`,`opacity:${op.toFixed(3)}`,
+        `--r0:rotate(${rot0.toFixed(1)}deg)`,`--r1:rotate(${rot1.toFixed(1)}deg)`,
+        `animation-duration:${dur}`,`animation-delay:-${delay}`,glow?`filter:${glow}`:''].filter(Boolean).join(';');
+      bg.appendChild(el);
+    }
+  });
+})();
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function initApp() {
+  renderStrip();
+  scrollTo(selectedDate);
+
+  const sec = document.getElementById('matches-section');
+  sec.innerHTML = '<div class="loading-msg">⚽ Loading full tournament schedule…</div>';
+
+  try {
+    // Load full tournament schedule (both halves) in parallel
+    const [r1, r2, rTeams] = await Promise.all([
+      fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=20260611-20260630&limit=200'),
+      fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=20260701-20260726&limit=200'),
+      fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/teams?limit=100'),
+    ]);
+    const [d1, d2, dTeams] = await Promise.all([r1.json(), r2.json(), rTeams.json()]);
+
+    // Populate allGamesCache and gamesCache (by date)
+    const all = [
+      ...(d1.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2),
+      ...(d2.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2),
+    ];
+    allGamesCache = all;
+    for (const ev of all) {
+      const k = dateKey(new Date(ev.date));
+      if (!gamesCache[k]) gamesCache[k] = [];
+      if (!gamesCache[k].find(x=>x.id===ev.id)) gamesCache[k].push(ev);
+    }
+
+    // Populate allWCTeams
+    const rawTeams = dTeams.sports?.[0]?.leagues?.[0]?.teams || dTeams.teams || [];
+    for (const t of rawTeams) {
+      const tm = t.team||t;
+      if (tm?.id && tm?.displayName) allWCTeams.push({id:String(tm.id), displayName:tm.displayName});
+    }
+    allWCTeams.sort((a,b)=>a.displayName.localeCompare(b.displayName));
+
+  } catch {
+    // Full schedule fetch failed — fall back to today only; date strip still works
+    try {
+      const key = dateKey(selectedDate);
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard?dates=${key}`);
+      const d = await r.json();
+      gamesCache[key] = (d.events||[]).filter(e=>e.competitions?.[0]?.competitors?.length===2);
+    } catch {}
+  }
+
+  // Load BBC recap links (generated by fetch_bbc_links.py)
+  try {
+    const bbcR = await fetch('bbc_links.json');
+    if (bbcR.ok) bbcLinksCache = await bbcR.json();
+  } catch {}
+
+  // Ensure today is selected, strip is scrolled to it, then show games
+  selectedDate = new Date(TODAY);
+  if (selectedDate < WC_DATES[0]) selectedDate = new Date(WC_DATES[0]);
+  if (selectedDate > WC_DATES[WC_DATES.length-1]) selectedDate = new Date(WC_DATES[WC_DATES.length-1]);
+  renderStrip();
+  scrollTo(selectedDate);
+  switchView('date');
+  loadAndShowGames(selectedDate);
+  // Pre-fetch one game per WC team in background so nation salary totals
+  // are available without requiring the user to open a game first
+  prefetchNationSalaries();
+}
+
+async function prefetchNationSalaries() {
+  // Fetch each WC team's roster directly — no dependency on allGamesCache
+  for (const t of WC48) {
+    if (teamSalaryCache[String(t.id)]) continue; // already have it
+    try {
+      await new Promise(r => setTimeout(r, 150));
+      const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/teams/${t.id}/roster`);
+      const d = await res.json();
+      const athletes = d.athletes || [];
+      let total = 0, count = 0;
+      for (const a of athletes) {
+        const id = String(a.id || '');
+        const sal = salaryEst(id, PLAYER_DATA[id]?.club || dynamicPlayerData[id]?.club || null, null);
+        if (!sal) continue;
+        const m = sal.val.match(/\$([\d.]+)([MK])/);
+        if (!m) continue;
+        total += parseFloat(m[1]) * (m[2] === 'M' ? 1_000_000 : 1_000);
+        count++;
+      }
+      if (total > 0) {
+        teamSalaryCache[String(t.id)] = {total, count, rosterSize: athletes.length};
+        if (currentView === 'team' && !filteredTeamId) showNationGrid();
+      }
+    } catch {}
+  }
+}
+
+initApp();
+</script>
+<script src="previews.js"></script>
+</body>
+</html>
