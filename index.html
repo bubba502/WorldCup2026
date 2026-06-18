@@ -337,7 +337,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v4.3).
+    Feedback is appreciated — if you're sending an email, please include the version number (v4.4).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -4188,7 +4188,7 @@ function buildTeamGrid(teamData, eid, teamIdx) {
     const clubHTML  = clubVal ? clubVal : '<span class="no-data">—</span>';
     const sal = salaryEst(id, clubVal, null);
     const salaryHTML = sal
-      ? `<span class="salary-cell">${sal.val}<span class="salary-est">${sal.est?' est.':' est.'}</span></span>`
+      ? `<span class="salary-cell">${sal.val}<span class="salary-est">${sal.est?' est.':''}</span></span>`
       : '<span class="no-data">—</span>';
     const badge = isStarter ? '<span class="start-badge">Starter</span>' : '<span class="bench-badge">Bench</span>';
     return `<tr class="${isStarter?'starter-row':'bench-row'}">
@@ -4410,7 +4410,9 @@ function cacheTeamSalaries(rosters) {
     let total = 0, count = 0;
     for (const p of teamData.roster||[]) {
       const id = p.athlete?.id||'';
-      const sal = salaryEst(id, PLAYER_DATA[id]?.club||dynamicPlayerData[id]?.club||null, null);
+      const fullName = p.athlete?.fullName||p.athlete?.displayName||'';
+      const club = PLAYER_DATA[id]?.club||dynamicPlayerData[id]?.club||wikiClub(fullName)||null;
+      const sal = salaryEst(id, club, null);
       if (!sal) continue;
       const m = sal.val.match(/\$([\d.]+)([MK])/);
       if (!m) continue;
@@ -4642,7 +4644,9 @@ async function prefetchNationSalaries() {
       let total = 0, count = 0;
       for (const a of athletes) {
         const id = String(a.id || '');
-        const sal = salaryEst(id, PLAYER_DATA[id]?.club || dynamicPlayerData[id]?.club || null, null);
+        const fullName = a.fullName || a.displayName || '';
+        const club = PLAYER_DATA[id]?.club || dynamicPlayerData[id]?.club || wikiClub(fullName) || null;
+        const sal = salaryEst(id, club, null);
         if (!sal) continue;
         const m = sal.val.match(/\$([\d.]+)([MK])/);
         if (!m) continue;
