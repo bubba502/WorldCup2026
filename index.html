@@ -4771,7 +4771,7 @@ async function showGroupStandings() {
     html += `<div style="display:grid;grid-template-columns:385px 1fr 385px;gap:16px;align-items:start">`;
     html += leftPanel;
     html += '<div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px">';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(475px,1fr));gap:16px">';
 
     for (const grp of groups) {
       const entries = (grp.standings?.entries || []).slice().sort(
