@@ -338,7 +338,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v4.6).
+    Feedback is appreciated — if you're sending an email, please include the version number (v4.7).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -4808,12 +4808,15 @@ async function showGroupStandings() {
 
     // Build group cards HTML
     const tileMin = mob ? 280 : 475;
-    const tblFont = mob ? '0.72rem' : '0.8rem';
+    const tblFont = mob ? '0.7rem' : '0.8rem';
     const flagSz  = mob ? 24 : 40;
-    const nameSz  = mob ? '0.7rem' : '0.78rem';
+    const nameSz  = mob ? '0.68rem' : '0.78rem';
     const pad     = mob ? '5px 6px' : '7px 10px';
-    const padN    = mob ? '4px 2px' : '7px 4px';
-    const padPts  = mob ? '4px 3px' : '7px 5px';
+    const padN    = mob ? '4px 1px' : '7px 4px';
+    const padPts  = mob ? '4px 2px' : '7px 5px';
+    // On mobile use table-layout:fixed with explicit col widths to guarantee flag space
+    const tblLayout = mob ? 'table-layout:fixed;' : '';
+    const thW = (px) => mob ? `width:${px}px;` : '';
 
     let cards = '';
     for (const grp of groups) {
@@ -4825,17 +4828,17 @@ async function showGroupStandings() {
                     box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px)">
           <div style="background:linear-gradient(135deg,#002868,#1a3a6e);color:#FFD700;
                       font-size:0.8rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;padding:8px 12px">${grp.name||''}</div>
-          <table style="width:100%;border-collapse:collapse;font-size:${tblFont}">
+          <table style="width:100%;border-collapse:collapse;font-size:${tblFont};${tblLayout}">
             <thead>
               <tr style="background:rgba(0,40,104,0.05);color:#666;font-weight:700;letter-spacing:0.04em">
                 <th style="text-align:left;padding:${pad}">Team</th>
-                <th style="text-align:center;padding:${padN}" title="Games Played">GP</th>
-                <th style="text-align:center;padding:${padN}" title="Wins">W</th>
-                <th style="text-align:center;padding:${padN}" title="Draws">D</th>
-                <th style="text-align:center;padding:${padN}" title="Losses">L</th>
-                <th style="text-align:center;padding:${padN}" title="Goals For/Against">GF:GA</th>
-                <th style="text-align:center;padding:${padN}" title="Points"><b>Pts</b></th>
-                <th style="text-align:center;padding:${padN}" title="Advance probability">Adv%</th>
+                <th style="text-align:center;padding:${padN};${thW(22)}" title="Games Played">GP</th>
+                <th style="text-align:center;padding:${padN};${thW(18)}" title="Wins">W</th>
+                <th style="text-align:center;padding:${padN};${thW(18)}" title="Draws">D</th>
+                <th style="text-align:center;padding:${padN};${thW(18)}" title="Losses">L</th>
+                <th style="text-align:center;padding:${padN};${thW(36)}" title="Goals For/Against">GF:GA</th>
+                <th style="text-align:center;padding:${padPts};${thW(22)}" title="Points"><b>Pts</b></th>
+                <th style="text-align:center;padding:${padPts};${thW(34)}" title="Advance probability">Adv%</th>
               </tr>
             </thead><tbody>`;
 
@@ -4880,10 +4883,10 @@ async function showGroupStandings() {
 
     let html;
     if (mob) {
-      // Mobile: group tiles full width, sidebars side-by-side below
+      // Mobile: sidebars side-by-side on top, group tiles stacked below
       html  = '<div style="padding:8px">';
-      html += `<div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px">${cards}</div>`;
-      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${leftPanel}${rightPanel}</div>`;
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">${leftPanel}${rightPanel}</div>`;
+      html += `<div style="display:grid;grid-template-columns:1fr;gap:10px">${cards}</div>`;
     } else {
       // Desktop: sidebars flank the centered group tiles
       html  = '<div style="padding:16px 32px">';
