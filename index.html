@@ -4714,7 +4714,7 @@ function _advancePct(rank, pts, gp, gd, groupEntries) {
 
   // Clinched top 2
   if (rank <= 2 && (remaining === 0 || thirdMax < pts)) {
-    return { pct: 100, label: '✓ 100%', color: '#16a34a' };
+    return { pct: 100, label: '✓', color: '#16a34a' };
   }
 
   // Eliminated from top 2
@@ -4791,7 +4791,7 @@ async function showGroupStandings() {
     const leftPanel  = sidePanel('All But In',   '🏆', likelyIn,  '#15803d', 'Checking…');
     const rightPanel = sidePanel('Going Home',    '✈️',  goingHome, '#991b1b', 'Checking…');
 
-    let html = '<div style="max-width:1440px;margin:0 auto;padding:16px">';
+    let html = '<div style="max-width:1440px;margin:0 auto;padding:16px 32px">';
     html += `<div style="display:grid;grid-template-columns:385px minmax(300px,1020px) 385px;gap:16px;align-items:start;justify-content:center">`;
     html += leftPanel;
     html += '<div>';
@@ -4802,7 +4802,7 @@ async function showGroupStandings() {
         (a,b) => _groupStat(a.stats,'rank') - _groupStat(b.stats,'rank')
       );
       html += `
-        <div style="background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;
+        <div style="background:rgba(255,255,255,0.92);border-radius:14px;overflow:clip;
                     box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);
                     backdrop-filter:blur(6px)">
           <div style="background:linear-gradient(135deg,#002868,#1a3a6e);color:#FFD700;
