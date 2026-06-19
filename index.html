@@ -4782,7 +4782,7 @@ async function showGroupStandings() {
         </div>`).join('');
       if (!rows) rows = `<div style="padding:12px 10px;font-size:0.7rem;color:#aaa;text-align:center">${emptyMsg}</div>`;
       return `
-        <div style="width:385px;flex-shrink:0;background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px);position:sticky;top:12px">
+        <div style="width:290px;flex-shrink:0;background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px);position:sticky;top:12px">
           <div style="background:${headerColor};color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:9px 12px">${emoji} ${title}</div>
           ${rows}
         </div>`;
@@ -4791,10 +4791,10 @@ async function showGroupStandings() {
     const leftPanel  = sidePanel('All But In',   '🏆', likelyIn,  '#15803d', 'Checking…');
     const rightPanel = sidePanel('Going Home',    '✈️',  goingHome, '#991b1b', 'Checking…');
 
-    let html = '<div style="max-width:1440px;margin:0 auto;padding:16px 32px">';
-    html += `<div style="display:grid;grid-template-columns:385px minmax(300px,1020px) 385px;gap:16px;align-items:start;justify-content:center">`;
+    let html = '<div style="padding:16px 32px">';
+    html += '<div style="display:flex;justify-content:center;align-items:start;gap:16px">';
     html += leftPanel;
-    html += '<div>';
+    html += '<div style="min-width:475px;max-width:968px">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(475px,1fr));gap:16px">';
 
     for (const grp of groups) {
