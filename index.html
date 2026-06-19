@@ -4773,55 +4773,59 @@ async function showGroupStandings() {
     const likelyIn   = allTeams.filter(t => t.pct >= 88).sort((a,b) => b.pct - a.pct);
     const goingHome  = allTeams.filter(t => t.pct <= 2 ).sort((a,b) => a.pct - b.pct);
 
-    function sidePanel(title, emoji, teams, headerColor, emptyMsg) {
+    const mob = window.innerWidth < 768;
+
+    function sidePanel(title, emoji, teams, headerColor, emptyMsg, fullWidth) {
       let rows = teams.map(t => `
         <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.05)">
-          <div style="width:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${flagImg(t.name, 40)}</div>
-          <span style="flex:1;font-size:0.78rem;font-weight:600;color:#1a1a2e">${t.shortName}</span>
-          <span style="font-size:0.7rem;font-weight:700;color:${t.color};white-space:nowrap">${t.label}</span>
+          <div style="width:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${flagImg(t.name, 40)}</div>
+          <span style="flex:1;font-size:0.76rem;font-weight:600;color:#1a1a2e">${t.shortName}</span>
+          <span style="font-size:0.68rem;font-weight:700;color:${t.color};white-space:nowrap">${t.label}</span>
         </div>`).join('');
-      if (!rows) rows = `<div style="padding:12px 10px;font-size:0.7rem;color:#aaa;text-align:center">${emptyMsg}</div>`;
+      if (!rows) rows = `<div style="padding:10px;font-size:0.68rem;color:#aaa;text-align:center">${emptyMsg}</div>`;
+      const w = fullWidth ? 'width:100%' : 'width:290px;flex-shrink:0';
+      const pos = fullWidth ? '' : 'position:sticky;top:12px;';
       return `
-        <div style="width:290px;flex-shrink:0;background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px);position:sticky;top:12px">
-          <div style="background:${headerColor};color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:9px 12px">${emoji} ${title}</div>
+        <div style="${w};${pos}background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px)">
+          <div style="background:${headerColor};color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:8px 12px">${emoji} ${title}</div>
           ${rows}
         </div>`;
     }
 
-    const leftPanel  = sidePanel('All But In',   '🏆', likelyIn,  '#15803d', 'Checking…');
-    const rightPanel = sidePanel('Going Home',    '✈️',  goingHome, '#991b1b', 'Checking…');
+    const leftPanel  = sidePanel('All But In', '🏆', likelyIn,  '#15803d', 'Checking…', mob);
+    const rightPanel = sidePanel('Going Home', '✈️',  goingHome, '#991b1b', 'Checking…', mob);
 
-    let html = '<div style="padding:16px 32px">';
-    html += '<div style="display:flex;justify-content:center;align-items:start;gap:16px">';
-    html += leftPanel;
-    html += '<div style="min-width:475px;max-width:968px">';
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(475px,1fr));gap:16px">';
+    // Build group cards HTML
+    const tileMin = mob ? 280 : 475;
+    const tblFont = mob ? '0.7rem' : '0.8rem';
+    const flagSz  = mob ? 16 : 20;
+    const nameSz  = mob ? '0.68rem' : '0.78rem';
+    const pad     = mob ? '5px 6px' : '7px 10px';
+    const padN    = mob ? '5px 3px' : '7px 4px';
 
+    let cards = '';
     for (const grp of groups) {
       const entries = (grp.standings?.entries || []).slice().sort(
         (a,b) => _groupStat(a.stats,'rank') - _groupStat(b.stats,'rank')
       );
-      html += `
+      cards += `
         <div style="background:rgba(255,255,255,0.92);border-radius:14px;overflow:clip;
-                    box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);
-                    backdrop-filter:blur(6px)">
+                    box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px)">
           <div style="background:linear-gradient(135deg,#002868,#1a3a6e);color:#FFD700;
-                      font-size:0.82rem;font-weight:800;letter-spacing:0.12em;
-                      text-transform:uppercase;padding:9px 14px">${grp.name||''}</div>
-          <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+                      font-size:0.8rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;padding:8px 12px">${grp.name||''}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:${tblFont}">
             <thead>
-              <tr style="background:rgba(0,40,104,0.05);color:#666;font-weight:700;letter-spacing:0.05em">
-                <th style="text-align:left;padding:6px 10px">Team</th>
-                <th style="text-align:center;padding:6px 4px" title="Games Played">GP</th>
-                <th style="text-align:center;padding:6px 4px" title="Wins">W</th>
-                <th style="text-align:center;padding:6px 4px" title="Draws">D</th>
-                <th style="text-align:center;padding:6px 4px" title="Losses">L</th>
-                <th style="text-align:center;padding:6px 4px" title="Goals For / Against">GF:GA</th>
-                <th style="text-align:center;padding:6px 4px" title="Points"><b>Pts</b></th>
-                <th style="text-align:center;padding:6px 10px" title="Estimated % chance of advancing to Round of 32">Adv%</th>
+              <tr style="background:rgba(0,40,104,0.05);color:#666;font-weight:700;letter-spacing:0.04em">
+                <th style="text-align:left;padding:${pad}">Team</th>
+                <th style="text-align:center;padding:${padN}" title="Games Played">GP</th>
+                <th style="text-align:center;padding:${padN}" title="Wins">W</th>
+                <th style="text-align:center;padding:${padN}" title="Draws">D</th>
+                <th style="text-align:center;padding:${padN}" title="Losses">L</th>
+                <th style="text-align:center;padding:${padN}" title="Goals For/Against">GF:GA</th>
+                <th style="text-align:center;padding:${padN}" title="Points"><b>Pts</b></th>
+                <th style="text-align:center;padding:${padN}" title="Advance probability">Adv%</th>
               </tr>
-            </thead>
-            <tbody>`;
+            </thead><tbody>`;
 
       for (const entry of entries) {
         const tm  = entry.team || {};
@@ -4835,40 +4839,49 @@ async function showGroupStandings() {
         const pts = _groupStat(s,'points');
         const rnk = _groupStat(s,'rank');
         const adv = _advancePct(rnk, pts, gp, gf-ga, entries);
-        const advanced = _groupStat(s,'advanced') === 1;
-        const rowBg = advanced ? 'rgba(22,163,74,0.07)' : '';
+        const rowBg = _groupStat(s,'advanced')===1 ? 'rgba(22,163,74,0.07)' : '';
         const shortName = tm.shortDisplayName || tm.abbreviation || tm.displayName || '';
 
-        html += `
+        cards += `
               <tr style="border-top:1px solid rgba(0,0,0,0.06);background:${rowBg}">
-                <td style="padding:7px 10px">
-                  <div style="display:flex;align-items:center;gap:7px;font-weight:600;color:#1a1a2e">
-                    ${flagImg(tm.displayName||'',20)}
-                    <span style="font-size:0.78rem">${shortName}</span>
+                <td style="padding:${pad}">
+                  <div style="display:flex;align-items:center;gap:6px;font-weight:600;color:#1a1a2e">
+                    ${flagImg(tm.displayName||'',flagSz)}
+                    <span style="font-size:${nameSz}">${shortName}</span>
                   </div>
                 </td>
-                <td style="text-align:center;color:#999;padding:7px 4px">${gp}</td>
-                <td style="text-align:center;padding:7px 4px">${w}</td>
-                <td style="text-align:center;padding:7px 4px">${dw}</td>
-                <td style="text-align:center;padding:7px 4px">${l}</td>
-                <td style="text-align:center;color:#555;padding:7px 4px">${gf}:${ga}</td>
-                <td style="text-align:center;font-weight:800;font-size:0.88rem;color:#002868;padding:7px 4px">${pts}</td>
-                <td style="text-align:center;padding:7px 10px">
-                  <span style="display:inline-block;padding:3px 8px;border-radius:6px;font-size:0.74rem;
+                <td style="text-align:center;color:#999;padding:${padN}">${gp}</td>
+                <td style="text-align:center;padding:${padN}">${w}</td>
+                <td style="text-align:center;padding:${padN}">${dw}</td>
+                <td style="text-align:center;padding:${padN}">${l}</td>
+                <td style="text-align:center;color:#555;padding:${padN}">${gf}:${ga}</td>
+                <td style="text-align:center;font-weight:800;font-size:0.86rem;color:#002868;padding:${padN}">${pts}</td>
+                <td style="text-align:center;padding:${padN}">
+                  <span style="display:inline-block;padding:2px 6px;border-radius:6px;font-size:0.68rem;
                                font-weight:700;background:${adv.color}18;color:${adv.color}">${adv.label}</span>
                 </td>
               </tr>`;
       }
-
-      html += `</tbody></table></div>`;
+      cards += `</tbody></table></div>`;
     }
 
-    html += '</div>'; // close group card grid
-    html += '</div>'; // close center column
-    html += rightPanel;
-    html += '</div>'; // close 3-col grid
+    let html;
+    if (mob) {
+      // Mobile: group tiles full width, sidebars side-by-side below
+      html  = '<div style="padding:8px">';
+      html += `<div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px">${cards}</div>`;
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${leftPanel}${rightPanel}</div>`;
+    } else {
+      // Desktop: sidebars flank the centered group tiles
+      html  = '<div style="padding:16px 32px">';
+      html += '<div style="display:flex;justify-content:center;align-items:start;gap:16px">';
+      html += leftPanel;
+      html += `<div style="min-width:${tileMin}px;max-width:968px"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(${tileMin}px,1fr));gap:16px">${cards}</div></div>`;
+      html += rightPanel;
+      html += '</div>';
+    }
     html += '<div style="text-align:center;padding:12px;font-size:0.6rem;color:#aaa">Adv% = estimated probability of advancing to Round of 32. Top 2 per group advance automatically; 8 best third-place teams also advance.</div>';
-    html += '</div>'; // close outer wrapper
+    html += '</div>';
     sec.innerHTML = html;
 
   } catch(e) {
