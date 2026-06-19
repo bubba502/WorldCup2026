@@ -380,9 +380,10 @@
     <div class="strip-arrow" id="strip-right">&#8250;</div>
   </div>
   <div class="view-tabs">
-    <button class="view-tab active" id="tab-date" onclick="switchView('date')">By Date</button>
-    <button class="view-tab"        id="tab-team" onclick="switchView('team')">By Nation</button>
-    <button class="view-tab"        id="tab-city" onclick="switchView('city')">By City</button>
+    <button class="view-tab active" id="tab-date"   onclick="switchView('date')">By Date</button>
+    <button class="view-tab"        id="tab-team"   onclick="switchView('team')">By Nation</button>
+    <button class="view-tab"        id="tab-city"   onclick="switchView('city')">By City</button>
+    <button class="view-tab"        id="tab-groups" onclick="switchView('groups')">Groups</button>
   </div>
 </div>
 
@@ -4280,6 +4281,7 @@ function switchView(mode) {
   document.getElementById('tab-date').classList.toggle('active', mode==='date');
   document.getElementById('tab-team').classList.toggle('active', mode==='team');
   document.getElementById('tab-city').classList.toggle('active', mode==='city');
+  document.getElementById('tab-groups').classList.toggle('active', mode==='groups');
   document.querySelector('.date-bar')?.scrollIntoView({behavior:'smooth', block:'start'});
   closeLineup();
 
@@ -4292,6 +4294,9 @@ function switchView(mode) {
   } else if (mode==='city') {
     filteredTeamId=null; filteredTeamName=null;
     showCityGrid();
+  } else if (mode==='groups') {
+    filteredTeamId=null; filteredTeamName=null; filteredCity=null;
+    showGroupStandings();
   }
 }
 
@@ -4662,6 +4667,148 @@ async function prefetchNationSalaries() {
 }
 
 initApp();
+
+// ── GROUP STANDINGS TAB ───────────────────────────────────────────────────────
+function _groupStat(stats, name) {
+  const s = (stats||[]).find(x=>x.name===name);
+  return s ? (parseFloat(s.value)||0) : 0;
+}
+
+function _advancePct(rank, pts, gp, gd, groupEntries) {
+  const remaining = 3 - gp;
+  const maxPts = pts + remaining * 3;
+
+  const sorted = groupEntries.map(e => ({
+    pts:    _groupStat(e.stats, 'points'),
+    maxPts: _groupStat(e.stats, 'points') + (3 - _groupStat(e.stats, 'gamesPlayed')) * 3,
+    rank:   _groupStat(e.stats, 'rank'),
+    gd:     _groupStat(e.stats, 'pointsFor') - _groupStat(e.stats, 'pointsAgainst'),
+  })).sort((a,b) => a.rank - b.rank);
+
+  const secondPts = sorted[1]?.pts    || 0;
+  const thirdMax  = sorted[2]?.maxPts || 0;
+
+  // Clinched top 2
+  if (rank <= 2 && (remaining === 0 || thirdMax < pts)) {
+    return { label: '✓ 100%', color: '#16a34a' };
+  }
+
+  // Eliminated from top 2
+  if (maxPts < secondPts) {
+    // 8 of 12 third-place teams advance; estimate quality vs field
+    if (maxPts < 2) return { label: '0%', color: '#9ca3af' };
+    const p = Math.round(Math.min(Math.max(55 + gd * 3 + pts * 2, 10), 78));
+    return { label: `~${p}%`, color: '#d97706' };
+  }
+
+  // All games done — rank 3 or 4 still uncertain
+  if (remaining === 0) {
+    if (rank === 3) {
+      const p = Math.round(Math.min(Math.max(67 + gd * 3 + (pts >= 4 ? 8 : pts >= 3 ? 0 : -14), 8), 90));
+      return { label: `~${p}%`, color: '#d97706' };
+    }
+    return { label: '0%', color: '#9ca3af' };
+  }
+
+  // Games remaining — estimate by rank + points
+  const tbl = {
+    1: { 2: [82,65,52], 1: [91,78,60] },
+    2: { 2: [70,52,36], 1: [66,48,30] },
+    3: { 2: [40,22,12], 1: [32,16,6]  },
+    4: { 2: [25,10,4],  1: [18,7,2]   },
+  };
+  const ptsIdx = pts >= 4 ? 0 : pts >= 2 ? 1 : 2;
+  const p = tbl[Math.min(rank,4)]?.[remaining]?.[ptsIdx] ?? 5;
+  const color = p >= 65 ? '#16a34a' : p >= 35 ? '#d97706' : '#9ca3af';
+  return { label: `~${p}%`, color };
+}
+
+async function showGroupStandings() {
+  const sec = document.getElementById('matches-section');
+  sec.innerHTML = '<div class="loading-msg">Loading group standings…</div>';
+  try {
+    const r = await fetch('https://site.api.espn.com/apis/v2/sports/soccer/FIFA.WORLD/standings', {signal: AbortSignal.timeout(12000)});
+    const d = await r.json();
+    const groups = d.children || [];
+
+    let html = '<div style="max-width:980px;margin:0 auto;padding:16px">';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">';
+
+    for (const grp of groups) {
+      const entries = (grp.standings?.entries || []).slice().sort(
+        (a,b) => _groupStat(a.stats,'rank') - _groupStat(b.stats,'rank')
+      );
+      html += `
+        <div style="background:rgba(255,255,255,0.92);border-radius:11px;overflow:hidden;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid rgba(0,40,104,0.1)">
+          <div style="background:linear-gradient(135deg,#002868,#1a3a6e);color:#FFD700;
+                      font-size:0.72rem;font-weight:800;letter-spacing:0.12em;
+                      text-transform:uppercase;padding:8px 12px">${grp.name||''}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:0.7rem">
+            <thead>
+              <tr style="background:rgba(0,40,104,0.04);color:#777;font-weight:700;letter-spacing:0.05em">
+                <th style="text-align:left;padding:5px 8px">Team</th>
+                <th style="text-align:center;padding:5px 3px" title="Games Played">GP</th>
+                <th style="text-align:center;padding:5px 3px" title="Wins">W</th>
+                <th style="text-align:center;padding:5px 3px" title="Draws">D</th>
+                <th style="text-align:center;padding:5px 3px" title="Losses">L</th>
+                <th style="text-align:center;padding:5px 3px" title="Goals For / Against">GF:GA</th>
+                <th style="text-align:center;padding:5px 3px" title="Points"><b>Pts</b></th>
+                <th style="text-align:center;padding:5px 8px" title="Estimated % chance of advancing to Round of 32">Adv%</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+      for (const entry of entries) {
+        const tm  = entry.team || {};
+        const s   = entry.stats || [];
+        const gp  = _groupStat(s,'gamesPlayed');
+        const w   = _groupStat(s,'wins');
+        const dw  = _groupStat(s,'ties');
+        const l   = _groupStat(s,'losses');
+        const gf  = _groupStat(s,'pointsFor');
+        const ga  = _groupStat(s,'pointsAgainst');
+        const pts = _groupStat(s,'points');
+        const rnk = _groupStat(s,'rank');
+        const adv = _advancePct(rnk, pts, gp, gf-ga, entries);
+        const advanced = _groupStat(s,'advanced') === 1;
+        const rowBg = advanced ? 'rgba(22,163,74,0.07)' : '';
+        const shortName = tm.shortDisplayName || tm.abbreviation || tm.displayName || '';
+
+        html += `
+              <tr style="border-top:1px solid rgba(0,0,0,0.055);background:${rowBg}">
+                <td style="padding:6px 8px">
+                  <div style="display:flex;align-items:center;gap:5px;font-weight:600;color:#1a1a2e">
+                    ${flagImg(tm.displayName||'',15)}
+                    <span style="font-size:0.68rem">${shortName}</span>
+                  </div>
+                </td>
+                <td style="text-align:center;color:#999;padding:6px 3px">${gp}</td>
+                <td style="text-align:center;padding:6px 3px">${w}</td>
+                <td style="text-align:center;padding:6px 3px">${dw}</td>
+                <td style="text-align:center;padding:6px 3px">${l}</td>
+                <td style="text-align:center;color:#555;padding:6px 3px">${gf}:${ga}</td>
+                <td style="text-align:center;font-weight:800;font-size:0.78rem;color:#002868;padding:6px 3px">${pts}</td>
+                <td style="text-align:center;padding:6px 8px">
+                  <span style="display:inline-block;padding:2px 7px;border-radius:6px;font-size:0.65rem;
+                               font-weight:700;background:${adv.color}18;color:${adv.color}">${adv.label}</span>
+                </td>
+              </tr>`;
+      }
+
+      html += `</tbody></table></div>`;
+    }
+
+    html += '</div>';
+    html += '<div style="text-align:center;padding:12px;font-size:0.6rem;color:#aaa">Adv% = estimated probability of advancing to Round of 32. Top 2 per group advance automatically; 8 best third-place teams also advance.</div>';
+    html += '</div>';
+    sec.innerHTML = html;
+
+  } catch(e) {
+    sec.innerHTML = '<div class="loading-msg">⚠️ Could not load group standings. Check connection and try again.</div>';
+  }
+}
+
 </script>
 <script src="previews.js"></script>
 </body>
