@@ -4792,9 +4792,9 @@ async function showGroupStandings() {
     const rightPanel = sidePanel('Going Home',    '✈️',  goingHome, '#991b1b', 'Checking…');
 
     let html = '<div style="max-width:1440px;margin:0 auto;padding:16px">';
-    html += `<div style="display:flex;justify-content:center;align-items:start;gap:16px;flex-wrap:wrap">`;
+    html += `<div style="display:grid;grid-template-columns:385px minmax(300px,1020px) 385px;gap:16px;align-items:start;justify-content:center">`;
     html += leftPanel;
-    html += '<div style="flex:1;min-width:300px;max-width:1020px">';
+    html += '<div>';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(475px,1fr));gap:16px">';
 
     for (const grp of groups) {
