@@ -4758,7 +4758,7 @@ async function showGroupStandings() {
         </div>`).join('');
       if (!rows) rows = `<div style="padding:12px 10px;font-size:0.7rem;color:#aaa;text-align:center">${emptyMsg}</div>`;
       return `
-        <div style="background:#fff;border-radius:11px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.10);border:1px solid rgba(0,0,0,0.08);position:sticky;top:12px">
+        <div style="background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);backdrop-filter:blur(6px);position:sticky;top:12px">
           <div style="background:${headerColor};color:#fff;font-size:0.72rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:9px 12px">${emoji} ${title}</div>
           ${rows}
         </div>`;
@@ -4767,7 +4767,7 @@ async function showGroupStandings() {
     const leftPanel  = sidePanel('All But In',   '🏆', likelyIn,  '#15803d', 'Checking…');
     const rightPanel = sidePanel('Going Home',    '✈️',  goingHome, '#991b1b', 'Checking…');
 
-    let html = '<div style="background:#ffffff;border-radius:14px;max-width:1440px;margin:0 auto;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)">';
+    let html = '<div style="max-width:1440px;margin:0 auto;padding:16px">';
     html += `<div style="display:grid;grid-template-columns:295px 1fr 295px;gap:16px;align-items:start">`;
     html += leftPanel;
     html += '<div>';
@@ -4778,8 +4778,9 @@ async function showGroupStandings() {
         (a,b) => _groupStat(a.stats,'rank') - _groupStat(b.stats,'rank')
       );
       html += `
-        <div style="background:#ffffff;border-radius:11px;overflow:hidden;
-                    box-shadow:0 2px 10px rgba(0,0,0,0.10);border:1px solid rgba(0,40,104,0.12)">
+        <div style="background:rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;
+                    box-shadow:0 4px 20px rgba(0,0,0,0.25);border:2px solid rgba(255,255,255,0.6);
+                    backdrop-filter:blur(6px)">
           <div style="background:linear-gradient(135deg,#002868,#1a3a6e);color:#FFD700;
                       font-size:0.82rem;font-weight:800;letter-spacing:0.12em;
                       text-transform:uppercase;padding:9px 14px">${grp.name||''}</div>
