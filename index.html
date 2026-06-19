@@ -408,14 +408,38 @@ const FLAG_CODES = {
   "Colombia":"co","Australia":"au","Poland":"pl","Saudi Arabia":"sa",
   "Iran":"ir","Cameroon":"cm","Ghana":"gh","Nigeria":"ng",
   "Tunisia":"tn","Egypt":"eg","Algeria":"dz","Serbia":"rs",
-  "Ukraine":"ua","Turkey":"tr","Austria":"at","Chile":"cl",
+  "Ukraine":"ua","Turkey":"tr","Türkiye":"tr","Austria":"at","Chile":"cl",
   "Peru":"pe","Costa Rica":"cr","Panama":"pa","Honduras":"hn",
   "Jamaica":"jm","New Zealand":"nz","Indonesia":"id","Venezuela":"ve",
   "Paraguay":"py","Bolivia":"bo","Guatemala":"gt","El Salvador":"sv",
   "Scotland":"gb-sct","Wales":"gb-wls","Northern Ireland":"gb-nir",
   "United Arab Emirates":"ae","Iraq":"iq","Qatar":"qa","Bahrain":"bh",
-  "Kenya":"ke","Mali":"ml","Ivory Coast":"ci","DR Congo":"cd",
+  "Kenya":"ke","Mali":"ml","Ivory Coast":"ci","Côte d'Ivoire":"ci","DR Congo":"cd","Congo DR":"cd",
   "Libya":"ly","Zimbabwe":"zw","Zambia":"zm","Tanzania":"tz",
+  "Haiti":"ht","Cape Verde":"cv","Cuba":"cu","Trinidad and Tobago":"tt",
+  "Sweden":"se","Norway":"no","Finland":"fi","Iceland":"is","Slovakia":"sk",
+  "Romania":"ro","Hungary":"hu","Greece":"gr","Slovenia":"si","Albania":"al",
+  "Bulgaria":"bg","North Macedonia":"mk","Kosovo":"xk","Georgia":"ge","Armenia":"am",
+  "Azerbaijan":"az","Kazakhstan":"kz","Uzbekistan":"uz","Kyrgyzstan":"kg",
+  "Chinese Taipei":"tw","Thailand":"th","Vietnam":"vn","Myanmar":"mm",
+  "Philippines":"ph","Singapore":"sg","Malaysia":"my","Palestine":"ps",
+  "Lebanon":"lb","Syria":"sy","Jordan":"jo","Oman":"om","Kuwait":"kw",
+  "Yemen":"ye","Mozambique":"mz","Uganda":"ug","Rwanda":"rw","Ethiopia":"et",
+  "Angola":"ao","Guinea":"gn","Guinea-Bissau":"gw","Equatorial Guinea":"gq",
+  "Benin":"bj","Togo":"tg","Burkina Faso":"bf","Niger":"ne","Chad":"td",
+  "Central African Republic":"cf","Gabon":"ga","Republic of Congo":"cg",
+  "Madagascar":"mg","Malawi":"mw","Botswana":"bw","Namibia":"na","Lesotho":"ls",
+  "Eswatini":"sz","Comoros":"km","Mauritius":"mu","Seychelles":"sc",
+  "Cuba":"cu","Curaçao":"cw","Suriname":"sr","Guyana":"gy","Belize":"bz",
+  "Nicaragua":"ni","Dominican Republic":"do","Puerto Rico":"pr","Barbados":"bb",
+  "Trinidad & Tobago":"tt","Antigua and Barbuda":"ag","Saint Kitts and Nevis":"kn",
+  "New Caledonia":"nc","Fiji":"fj","Papua New Guinea":"pg","Solomon Islands":"sb",
+  "Vanuatu":"vu","Tahiti":"pf","Samoa":"ws","Tonga":"to",
+  "Israel":"il","Cyprus":"cy","Malta":"mt","Liechtenstein":"li","Andorra":"ad",
+  "Luxembourg":"lu","Estonia":"ee","Latvia":"lv","Lithuania":"lt",
+  "Moldova":"md","Belarus":"by","Bosnia and Herzegovina":"ba","Montenegro":"me",
+  "Sudan":"sd","South Sudan":"ss","Eritrea":"er","Djibouti":"dj","Somalia":"so",
+  "Cameroon":"cm","Cabo Verde":"cv",
 };
 // Returns an <img> tag. size = flagcdn width bucket: 20,40,80,160
 function flagImg(name, size) {
@@ -4751,10 +4775,10 @@ async function showGroupStandings() {
 
     function sidePanel(title, emoji, teams, headerColor, emptyMsg) {
       let rows = teams.map(t => `
-        <div style="display:flex;align-items:center;gap:7px;padding:6px 10px;border-bottom:1px solid rgba(0,0,0,0.05)">
-          ${flagImg(t.name, 18)}
-          <span style="flex:1;font-size:0.74rem;font-weight:600;color:#1a1a2e">${t.shortName}</span>
-          <span style="font-size:0.68rem;font-weight:700;color:${t.color}">${t.label}</span>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.05)">
+          <div style="width:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${flagImg(t.name, 40)}</div>
+          <span style="flex:1;font-size:0.78rem;font-weight:600;color:#1a1a2e">${t.shortName}</span>
+          <span style="font-size:0.7rem;font-weight:700;color:${t.color};white-space:nowrap">${t.label}</span>
         </div>`).join('');
       if (!rows) rows = `<div style="padding:12px 10px;font-size:0.7rem;color:#aaa;text-align:center">${emptyMsg}</div>`;
       return `
