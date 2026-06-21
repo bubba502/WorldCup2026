@@ -185,6 +185,13 @@
     .lineup-teams-header { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 10px; }
     .lineup-team-name { font-size: 1.1rem; font-weight: 800; }
     .lineup-score { font-size: 2.4rem; font-weight: 900; font-variant-numeric: tabular-nums; color: #FFD700; }
+    @media (min-width: 768px) {
+      .lineup-match-header .lineup-team-name { font-size: 3rem; }
+      .lineup-match-header .lineup-teams-header { gap: 28px; margin-bottom: 16px; }
+      .lineup-match-header .lh-badge-rank { font-size: 1rem !important; padding: 4px 10px !important; border-radius: 6px !important; }
+      .lineup-match-header .lh-badge-odds { font-size: 1rem !important; padding: 4px 10px !important; border-radius: 6px !important; }
+      .lineup-match-header .lineup-score { font-size: 4rem; }
+    }
     .lineup-status { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin-top: 4px; letter-spacing: 0.12em; text-transform: uppercase; }
     .lineup-status.live { color: #4ade80; }
 
@@ -338,7 +345,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v5.3).
+    Feedback is appreciated — if you're sending an email, please include the version number (v5.4).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -4198,11 +4205,12 @@ function renderLineups(eid, evt) {
 
   const _awayPtH = PRETOURNAMENT[away.team?.displayName] || null;
   const _homePtH = PRETOURNAMENT[home.team?.displayName] || null;
+  const _lhFlagSz = window.innerWidth >= 768 ? 80 : 40;
   const _rankBadge = (pt) => pt
-    ? `<span style="font-size:0.6rem;font-weight:800;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0">FIFA #${pt.rank}</span>`
+    ? `<span class="lh-badge-rank" style="font-size:0.6rem;font-weight:800;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0">FIFA #${pt.rank}</span>`
     : '';
   const _oddsBadge = (pt) => pt
-    ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(255,255,255,0.15);color:#fff;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0">${toFractionalOdds(pt.odds)}</span>`
+    ? `<span class="lh-badge-odds" style="font-size:0.6rem;font-weight:700;background:rgba(255,255,255,0.15);color:#fff;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0">${toFractionalOdds(pt.odds)}</span>`
     : '';
 
   panel.innerHTML = `
@@ -4212,9 +4220,9 @@ function renderLineups(eid, evt) {
     </div>
     <div class="lineup-match-header ${liveClass}">
       <div class="lineup-teams-header" style="align-items:center;flex-wrap:wrap;gap:10px">
-        <div class="lineup-team-name" style="display:flex;align-items:center;gap:8px">${_rankBadge(_awayPtH)}${flagImg(away.team?.displayName||'',40)} <span onclick="goToTeam('${away.team?.id||''}','${away.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${away.team?.displayName||''}</span>${_oddsBadge(_awayPtH)}</div>
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${_rankBadge(_awayPtH)}${flagImg(away.team?.displayName||'',_lhFlagSz)} <span onclick="goToTeam('${away.team?.id||''}','${away.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${away.team?.displayName||''}</span>${_oddsBadge(_awayPtH)}</div>
         <div style="color:rgba(255,255,255,0.3);font-size:1.8rem;margin:0 8px">·</div>
-        <div class="lineup-team-name" style="display:flex;align-items:center;gap:8px">${_rankBadge(_homePtH)}${flagImg(home.team?.displayName||'',40)} <span onclick="goToTeam('${home.team?.id||''}','${home.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${home.team?.displayName||''}</span>${_oddsBadge(_homePtH)}</div>
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${_rankBadge(_homePtH)}${flagImg(home.team?.displayName||'',_lhFlagSz)} <span onclick="goToTeam('${home.team?.id||''}','${home.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${home.team?.displayName||''}</span>${_oddsBadge(_homePtH)}</div>
       </div>
       ${scoreHTML}
       <div class="lineup-status ${liveClass}">${statusTxt}</div>
