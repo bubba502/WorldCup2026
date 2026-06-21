@@ -338,7 +338,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v5.0).
+    Feedback is appreciated — if you're sending an email, please include the version number (v5.2).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -4203,9 +4203,9 @@ function renderLineups(eid, evt) {
     </div>
     <div class="lineup-match-header ${liveClass}">
       <div class="lineup-teams-header">
-        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(away.team?.displayName||'',40)} ${away.team?.displayName||''}</div>
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(away.team?.displayName||'',40)} <span onclick="goToTeam('${away.team?.id||''}','${away.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${away.team?.displayName||''}</span></div>
         <div style="color:rgba(255,255,255,0.3);font-size:1.8rem;margin:0 12px">·</div>
-        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(home.team?.displayName||'',40)} ${home.team?.displayName||''}</div>
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(home.team?.displayName||'',40)} <span onclick="goToTeam('${home.team?.id||''}','${home.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${home.team?.displayName||''}</span></div>
       </div>
       ${scoreHTML}
       <div class="lineup-status ${liveClass}">${statusTxt}</div>
