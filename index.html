@@ -338,7 +338,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v4.7).
+    Feedback is appreciated — if you're sending an email, please include the version number (v4.8).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -2392,6 +2392,59 @@ const WC48 = [
   {id:'212',   name:'Uruguay',           abbr:'URU', iso:'uy'},
   {id:'2570',  name:'Uzbekistan',        abbr:'UZB', iso:'uz'},
 ];
+
+// Pre-tournament data: FIFA ranking (June 11, 2026 official) + BetMGM odds (June 12, 2026)
+const PRETOURNAMENT = {
+  'Algeria':       { rank:35,  odds:'+25000'  },
+  'Argentina':     { rank:3,   odds:'+900'    },
+  'Australia':     { rank:26,  odds:'+50000'  },
+  'Austria':       { rank:24,  odds:'+15000'  },
+  'Belgium':       { rank:10,  odds:'+4000'   },
+  'Bosnia-Herz.':  { rank:33,  odds:'+25000'  },
+  'Brazil':        { rank:5,   odds:'+1200'   },
+  'Canada':        { rank:27,  odds:'+15000'  },
+  'Cape Verde':    { rank:68,  odds:'+100000' },
+  'Colombia':      { rank:13,  odds:'+4000'   },
+  'Congo DR':      { rank:46,  odds:'+75000'  },
+  'Croatia':       { rank:11,  odds:'+8000'   },
+  'Curaçao':       { rank:82,  odds:'+250000' },
+  'Czechia':       { rank:21,  odds:'+30000'  },
+  'Ecuador':       { rank:23,  odds:'+8000'   },
+  'Egypt':         { rank:34,  odds:'+25000'  },
+  'England':       { rank:4,   odds:'+700'    },
+  'France':        { rank:1,   odds:'+450'    },
+  'Germany':       { rank:9,   odds:'+1400'   },
+  'Ghana':         { rank:72,  odds:'+50000'  },
+  'Haiti':         { rank:84,  odds:'+250000' },
+  'Iran':          { rank:20,  odds:'+50000'  },
+  'Iraq':          { rank:57,  odds:'+100000' },
+  'Ivory Coast':   { rank:42,  odds:'+20000'  },
+  'Japan':         { rank:18,  odds:'+6600'   },
+  'Jordan':        { rank:66,  odds:'+100000' },
+  'Mexico':        { rank:15,  odds:'+5000'   },
+  'Morocco':       { rank:6,   odds:'+3500'   },
+  'Netherlands':   { rank:7,   odds:'+1700'   },
+  'New Zealand':   { rank:86,  odds:'+100000' },
+  'Norway':        { rank:29,  odds:'+3500'   },
+  'Panama':        { rank:30,  odds:'+100000' },
+  'Paraguay':      { rank:39,  odds:'+25000'  },
+  'Portugal':      { rank:8,   odds:'+1400'   },
+  'Qatar':         { rank:51,  odds:'+100000' },
+  'Saudi Arabia':  { rank:60,  odds:'+100000' },
+  'Scotland':      { rank:36,  odds:'+25000'  },
+  'Senegal':       { rank:19,  odds:'+6600'   },
+  'South Africa':  { rank:61,  odds:'+100000' },
+  'South Korea':   { rank:22,  odds:'+20000'  },
+  'Spain':         { rank:2,   odds:'+450'    },
+  'Sweden':        { rank:25,  odds:'+10000'  },
+  'Switzerland':   { rank:17,  odds:'+6600'   },
+  'Tunisia':       { rank:40,  odds:'+50000'  },
+  'Türkiye':       { rank:28,  odds:'+6600'   },
+  'United States': { rank:14,  odds:'+5000'   },
+  'Uruguay':       { rank:16,  odds:'+6600'   },
+  'Uzbekistan':    { rank:50,  odds:'+100000' },
+};
+
 let filteredCity      = null;
 let allGamesCache     = null; // full tournament schedule, loaded once for city view
 
@@ -4463,7 +4516,7 @@ function cacheTeamSalaries(rosters) {
   }
 }
 
-let nationSortMode = 'alpha'; // 'alpha' | 'salary'
+let nationSortMode = 'alpha'; // 'alpha' | 'salary' | 'rank'
 
 function showNationGrid() {
   const sec = document.getElementById('matches-section');
@@ -4471,7 +4524,12 @@ function showNationGrid() {
     if (nationSortMode === 'salary') {
       const sa = teamSalaryCache[a.id]?.total || 0;
       const sb = teamSalaryCache[b.id]?.total || 0;
-      if (sa !== sb) return sb - sa; // highest first
+      if (sa !== sb) return sb - sa;
+    }
+    if (nationSortMode === 'rank') {
+      const ra = PRETOURNAMENT[a.name]?.rank ?? 999;
+      const rb = PRETOURNAMENT[b.name]?.rank ?? 999;
+      if (ra !== rb) return ra - rb;
     }
     return a.name.localeCompare(b.name);
   });
@@ -4482,6 +4540,7 @@ function showNationGrid() {
         <div style="display:flex;gap:6px">
           <button onclick="nationSortMode='alpha';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='alpha'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='alpha'?'#002868':'transparent'};color:${nationSortMode==='alpha'?'#fff':'#555'};cursor:pointer">A–Z</button>
           <button onclick="nationSortMode='salary';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='salary'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='salary'?'#002868':'transparent'};color:${nationSortMode==='salary'?'#fff':'#555'};cursor:pointer">$ Salary</button>
+          <button onclick="nationSortMode='rank';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='rank'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='rank'?'#002868':'transparent'};color:${nationSortMode==='rank'?'#fff':'#555'};cursor:pointer">FIFA Rank</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px">
@@ -4489,6 +4548,13 @@ function showNationGrid() {
           const sal = teamSalaryCache[t.id];
           const salLine = sal
             ? `<div style="font-size:0.72rem;font-weight:700;color:#002868;margin-top:4px">~$${(sal.total/1_000_000).toFixed(1)}M</div><div style="font-size:0.58rem;color:#999">${sal.count}/${sal.rosterSize} players</div>`
+            : '';
+          const pt = PRETOURNAMENT[t.name];
+          const ptLine = pt
+            ? `<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;justify-content:center">
+                <span style="font-size:0.58rem;font-weight:700;background:#002868;color:#FFD700;padding:2px 5px;border-radius:4px">FIFA #${pt.rank}</span>
+                <span style="font-size:0.58rem;font-weight:700;background:rgba(0,0,0,0.07);color:#444;padding:2px 5px;border-radius:4px">${pt.odds}</span>
+               </div>`
             : '';
           return `
           <div onclick="selectTeam('${t.id}','${t.name.replace(/'/g,"\\'")}')"
@@ -4503,6 +4569,7 @@ function showNationGrid() {
             <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.12em;color:#999;line-height:1">${t.abbr}</div>
             <div style="font-size:0.8rem;font-weight:600;color:#1a1a2e;text-align:center;line-height:1.2">${t.name}</div>
             ${salLine}
+            ${ptLine}
           </div>`;
         }).join('')}
       </div>
@@ -4545,7 +4612,11 @@ function renderTeamSchedule(events) {
     if (!byDate.has(label)) byDate.set(label,[]);
     byDate.get(label).push(ev);
   }
-  let html = `<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
+  const _pt = PRETOURNAMENT[filteredTeamName] || null;
+  const _ptBadges = _pt
+    ? `<span style="font-size:0.6rem;font-weight:700;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;margin-left:8px">FIFA #${_pt.rank}</span><span style="font-size:0.6rem;font-weight:700;background:rgba(0,0,0,0.08);color:#333;padding:2px 6px;border-radius:4px;margin-left:4px">${_pt.odds} to win</span>`
+    : '';
+  let html = `<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName}${_ptBadges} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
   let first = true;
   for (const [label, evs] of byDate) {
     html += `<div class="match-date-sep${first?' first':''}">${label}</div><div class="match-grid">${evs.map(e=>buildMatchCard(e)).join('')}</div>`;
