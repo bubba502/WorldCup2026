@@ -3,3 +3,5 @@ __pycache__/
 bbc_links_log.txt
 wiki_squads_raw.txt
 *.log
+
+.vercel
