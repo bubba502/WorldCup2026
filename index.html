@@ -338,7 +338,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v4.9).
+    Feedback is appreciated — if you're sending an email, please include the version number (v5.0).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -2392,6 +2392,12 @@ const WC48 = [
   {id:'212',   name:'Uruguay',           abbr:'URU', iso:'uy'},
   {id:'2570',  name:'Uzbekistan',        abbr:'UZB', iso:'uz'},
 ];
+
+function toFractionalOdds(american) {
+  const n = parseInt(String(american).replace('+',''));
+  const r = n / 100;
+  return (r === Math.floor(r) ? r : r.toFixed(1)) + '-1';
+}
 
 // Pre-tournament data: FIFA ranking (June 11, 2026 official) + BetMGM odds (June 12, 2026)
 const PRETOURNAMENT = {
@@ -4559,7 +4565,7 @@ function showNationGrid() {
           const ptLine = pt
             ? `<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;justify-content:center">
                 <span style="font-size:0.58rem;font-weight:700;background:#002868;color:#FFD700;padding:2px 5px;border-radius:4px">FIFA #${pt.rank}</span>
-                <span style="font-size:0.58rem;font-weight:700;background:rgba(0,0,0,0.07);color:#444;padding:2px 5px;border-radius:4px">${pt.odds}</span>
+                <span style="font-size:0.58rem;font-weight:700;background:rgba(0,0,0,0.07);color:#444;padding:2px 5px;border-radius:4px">${toFractionalOdds(pt.odds)}</span>
                </div>`
             : '';
           return `
@@ -4622,7 +4628,7 @@ function renderTeamSchedule(events) {
   const _sal = teamSalaryCache[filteredTeamId]  || null;
   const _badges = [
     _pt  ? `<span style="font-size:0.6rem;font-weight:700;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;margin-left:6px">FIFA #${_pt.rank}</span>` : '',
-    _pt  ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(0,0,0,0.08);color:#333;padding:2px 6px;border-radius:4px;margin-left:4px">${_pt.odds} to win</span>` : '',
+    _pt  ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(0,0,0,0.08);color:#333;padding:2px 6px;border-radius:4px;margin-left:4px">${toFractionalOdds(_pt.odds)} to win</span>` : '',
     _sal ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(0,128,0,0.1);color:#15803d;padding:2px 6px;border-radius:4px;margin-left:4px">~$${(_sal.total/1_000_000).toFixed(1)}M salary</span>` : '',
   ].join('');
   let html = `<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName}${_badges} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
