@@ -338,7 +338,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v5.2).
+    Feedback is appreciated — if you're sending an email, please include the version number (v5.3).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -4196,16 +4196,25 @@ function renderLineups(eid, evt) {
     gridsHTML = `<div class="no-lineup">Lineups not yet confirmed for this match.<br><span style="font-size:0.75rem;color:#bbb">Check back closer to kick-off.</span></div>`;
   }
 
+  const _awayPtH = PRETOURNAMENT[away.team?.displayName] || null;
+  const _homePtH = PRETOURNAMENT[home.team?.displayName] || null;
+  const _rankBadge = (pt) => pt
+    ? `<span style="font-size:0.6rem;font-weight:800;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0">FIFA #${pt.rank}</span>`
+    : '';
+  const _oddsBadge = (pt) => pt
+    ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(255,255,255,0.15);color:#fff;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0">${toFractionalOdds(pt.odds)}</span>`
+    : '';
+
   panel.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <div onclick="closeLineup()" class="lineup-back" style="margin-bottom:0">← Back to matches</div>
       <button onclick="refreshLineups('${eid}')" class="lineup-back" id="refresh-btn-${eid}" style="margin-bottom:0;border-color:#002868;color:#002868">↻ Refresh Lineups</button>
     </div>
     <div class="lineup-match-header ${liveClass}">
-      <div class="lineup-teams-header">
-        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(away.team?.displayName||'',40)} <span onclick="goToTeam('${away.team?.id||''}','${away.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${away.team?.displayName||''}</span></div>
-        <div style="color:rgba(255,255,255,0.3);font-size:1.8rem;margin:0 12px">·</div>
-        <div class="lineup-team-name" style="display:flex;align-items:center;gap:10px">${flagImg(home.team?.displayName||'',40)} <span onclick="goToTeam('${home.team?.id||''}','${home.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${home.team?.displayName||''}</span></div>
+      <div class="lineup-teams-header" style="align-items:center;flex-wrap:wrap;gap:10px">
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:8px">${_rankBadge(_awayPtH)}${flagImg(away.team?.displayName||'',40)} <span onclick="goToTeam('${away.team?.id||''}','${away.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${away.team?.displayName||''}</span>${_oddsBadge(_awayPtH)}</div>
+        <div style="color:rgba(255,255,255,0.3);font-size:1.8rem;margin:0 8px">·</div>
+        <div class="lineup-team-name" style="display:flex;align-items:center;gap:8px">${_rankBadge(_homePtH)}${flagImg(home.team?.displayName||'',40)} <span onclick="goToTeam('${home.team?.id||''}','${home.team?.displayName||''}')" style="cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.4)">${home.team?.displayName||''}</span>${_oddsBadge(_homePtH)}</div>
       </div>
       ${scoreHTML}
       <div class="lineup-status ${liveClass}">${statusTxt}</div>
