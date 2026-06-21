@@ -338,7 +338,7 @@
 <div id="welcome-banner" style="background:linear-gradient(135deg,#002868 0%,#BF0A30 100%);color:#fff;padding:28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.35);border-bottom:4px solid #FFD700">
   <div style="font-size:1.1rem;line-height:1.55;font-weight:600;letter-spacing:0.01em">
     ⚽ &nbsp;Hey! Hope you enjoy the World Cup as much as I do.
-    Feedback is appreciated — if you're sending an email, please include the version number (v4.8).
+    Feedback is appreciated — if you're sending an email, please include the version number (v4.9).
     Email <a href="mailto:tomsbotagent@gmail.com" style="color:#FFD700;text-decoration:underline">tomsbotagent@gmail.com</a>.
     &nbsp;Many thanks — Tom.
   </div>
@@ -4516,7 +4516,7 @@ function cacheTeamSalaries(rosters) {
   }
 }
 
-let nationSortMode = 'alpha'; // 'alpha' | 'salary' | 'rank'
+let nationSortMode = 'alpha'; // 'alpha' | 'salary' | 'rank' | 'odds'
 
 function showNationGrid() {
   const sec = document.getElementById('matches-section');
@@ -4531,6 +4531,11 @@ function showNationGrid() {
       const rb = PRETOURNAMENT[b.name]?.rank ?? 999;
       if (ra !== rb) return ra - rb;
     }
+    if (nationSortMode === 'odds') {
+      const oa = parseInt((PRETOURNAMENT[a.name]?.odds || '+999999').replace('+','')) || 999999;
+      const ob = parseInt((PRETOURNAMENT[b.name]?.odds || '+999999').replace('+','')) || 999999;
+      if (oa !== ob) return oa - ob;
+    }
     return a.name.localeCompare(b.name);
   });
   sec.innerHTML = `
@@ -4541,6 +4546,7 @@ function showNationGrid() {
           <button onclick="nationSortMode='alpha';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='alpha'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='alpha'?'#002868':'transparent'};color:${nationSortMode==='alpha'?'#fff':'#555'};cursor:pointer">A–Z</button>
           <button onclick="nationSortMode='salary';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='salary'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='salary'?'#002868':'transparent'};color:${nationSortMode==='salary'?'#fff':'#555'};cursor:pointer">$ Salary</button>
           <button onclick="nationSortMode='rank';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='rank'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='rank'?'#002868':'transparent'};color:${nationSortMode==='rank'?'#fff':'#555'};cursor:pointer">FIFA Rank</button>
+          <button onclick="nationSortMode='odds';showNationGrid()" style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1.5px solid ${nationSortMode==='odds'?'#002868':'rgba(0,0,0,0.15)'};background:${nationSortMode==='odds'?'#002868':'transparent'};color:${nationSortMode==='odds'?'#fff':'#555'};cursor:pointer">Odds</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px">
@@ -4612,11 +4618,14 @@ function renderTeamSchedule(events) {
     if (!byDate.has(label)) byDate.set(label,[]);
     byDate.get(label).push(ev);
   }
-  const _pt = PRETOURNAMENT[filteredTeamName] || null;
-  const _ptBadges = _pt
-    ? `<span style="font-size:0.6rem;font-weight:700;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;margin-left:8px">FIFA #${_pt.rank}</span><span style="font-size:0.6rem;font-weight:700;background:rgba(0,0,0,0.08);color:#333;padding:2px 6px;border-radius:4px;margin-left:4px">${_pt.odds} to win</span>`
-    : '';
-  let html = `<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName}${_ptBadges} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
+  const _pt  = PRETOURNAMENT[filteredTeamName] || null;
+  const _sal = teamSalaryCache[filteredTeamId]  || null;
+  const _badges = [
+    _pt  ? `<span style="font-size:0.6rem;font-weight:700;background:#002868;color:#FFD700;padding:2px 6px;border-radius:4px;margin-left:6px">FIFA #${_pt.rank}</span>` : '',
+    _pt  ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(0,0,0,0.08);color:#333;padding:2px 6px;border-radius:4px;margin-left:4px">${_pt.odds} to win</span>` : '',
+    _sal ? `<span style="font-size:0.6rem;font-weight:700;background:rgba(0,128,0,0.1);color:#15803d;padding:2px 6px;border-radius:4px;margin-left:4px">~$${(_sal.total/1_000_000).toFixed(1)}M salary</span>` : '',
+  ].join('');
+  let html = `<div class="team-filter-bar">${flagImg(filteredTeamName,20)} ${filteredTeamName}${_badges} — All Matches <button class="clear-btn" onclick="showNationGrid()">← Nations</button> <button class="clear-btn" onclick="switchView('date')">✕ Close</button></div>`;
   let first = true;
   for (const [label, evs] of byDate) {
     html += `<div class="match-date-sep${first?' first':''}">${label}</div><div class="match-grid">${evs.map(e=>buildMatchCard(e)).join('')}</div>`;
