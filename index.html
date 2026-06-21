@@ -3929,17 +3929,26 @@ function buildMatchCard(e) {
     ? `<div class="match-preview">${MATCH_PREVIEWS[e.id].text}</div>` : '';
   const tileCity = comp.venue?.address?.city || comp.venue?.fullName || '';
   const tileVenue = tileCity ? `<div style="font-size:0.68rem;color:#111;font-weight:700;margin-top:6px;text-align:center">📍 ${tileCity}</div>` : '';
+  const _awayPt = PRETOURNAMENT[away.team.displayName];
+  const _homePt = PRETOURNAMENT[home.team.displayName];
+  const _teamBadge = (pt) => pt
+    ? `<div style="font-size:0.55rem;font-weight:700;color:#666;margin-top:3px;text-align:center;line-height:1.4">
+         <span style="background:#002868;color:#FFD700;padding:1px 4px;border-radius:3px">FIFA #${pt.rank}</span>&nbsp;
+         <span style="background:rgba(0,0,0,0.07);color:#444;padding:1px 4px;border-radius:3px">${toFractionalOdds(pt.odds)}</span>
+       </div>` : '';
   return `<div class="match-card ${isActive} ${liveClass}" onclick="onMatchClick('${e.id}')">
     <div class="match-comp">⚽ ${comp.notes?.[0]?.headline||'FIFA World Cup 2026'}</div>
     <div class="match-teams">
       <div class="team-side"><div class="team-flag-wrap">
         ${flagImg(away.team.displayName, 40)}
         <div class="team-name">${away.team.displayName}</div>
+        ${_teamBadge(_awayPt)}
       </div></div>
       <div class="score-block">${scoreHTML}${statusHTML}</div>
       <div class="team-side"><div class="team-flag-wrap">
         ${flagImg(home.team.displayName, 40)}
         <div class="team-name">${home.team.displayName}</div>
+        ${_teamBadge(_homePt)}
       </div></div>
     </div>${tileVenue}${preview}
   </div>`;
